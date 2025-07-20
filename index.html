@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shukdev Sharma | Cloud & Data Engineer</title>
+    
+    <!-- Chosen Palette: Dark Calm Neutral -->
+    <!-- Application Structure Plan: The SPA is designed as a single-page, top-to-bottom narrative to guide a recruiter through a compelling story of Shukdev's capabilities. It starts with a high-impact Hero section for immediate identity, followed by a scannable dashboard of his key quantifiable Achievements to quickly establish value. An interactive, chronological Experience timeline allows users to explore his career path without being overwhelmed. This is followed by a detailed, categorized Skills section with a bar chart for visual comparison. The core of the site is the interactive Projects section, structured as tabbed case studies to provide depth on his most significant work. The structure concludes with Education/Leadership and a clear Contact CTA. This user flow—from broad impression to deep evidence—is designed to be more persuasive and user-friendly than a simple resume recreation. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Key quantifiable results (e.g., "30% faster ETL", "94% latency reduction"). Goal: Inform & Impress. Viz/Method: HTML/Tailwind "Stat Cards" with large numbers. Interaction: None. Justification: Provides immediate, high-impact evidence of his value.
+        - Report Info: Chronological work history. Goal: Organize & Compare. Viz/Method: HTML/CSS vertical timeline. Interaction: JS-powered accordion toggle for each role's details. Justification: More engaging than a static list; prevents information overload by hiding details until requested.
+        - Report Info: Technical skills list. Goal: Compare & Inform. Viz/Method: Categorized lists and a Chart.js Bar Chart. Interaction: Hover tooltips on the chart. Justification: The bar chart offers a quick visual summary of his core competencies, which is faster to parse than reading a list.
+        - Report Info: Detailed project descriptions from his experience. Goal: Organize & Detail. Viz/Method: Tabbed content panes. Interaction: JS-powered tab switching. Justification: Allows for in-depth case studies without cluttering the page, enabling users to focus on one project at a time.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #18181b; /* Zinc 900 */
+            color: #f4f4f5; /* Zinc 100 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+            background-color: #292929; /* Dark background for chart area */
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 1.5rem; /* p-6 */
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-link.active {
+            color: #2dd4bf; /* Teal 400 */
+            font-weight: 600;
+        }
+        .tab-btn.active {
+            background-color: #2dd4bf; /* Teal 400 */
+            color: #ffffff;
+        }
+        .timeline-item-content {
+            transition: all 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+        }
+        .timeline-item-content.open {
+            max-height: 1000px; 
+        }
+        .arrow {
+            transition: transform 0.3s ease-in-out;
+        }
+        .arrow.rotated {
+            transform: rotate(90deg);
+        }
+        /* Scroll Reveal Animation */
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .reveal-on-scroll.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header id="header" class="bg-stone-900/80 backdrop-blur-md sticky top-0 z-50 transition-all duration-300 py-4 md:py-6">
+        <nav class="container mx-auto px-6 flex justify-between items-center">
+            <a href="#" class="text-xl font-bold text-stone-100">Shukdev Sharma</a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#about" class="nav-link text-stone-300 hover:text-teal-400 transition-colors">About</a>
+                <a href="#experience" class="nav-link text-stone-300 hover:text-teal-400 transition-colors">Experience</a>
+                <a href="#skills" class="nav-link text-stone-300 hover:text-teal-400 transition-colors">Skills</a>
+                <a href="#certifications" class="nav-link text-stone-300 hover:text-teal-400 transition-colors">Certifications</a>
+                <a href="#projects" class="nav-link text-stone-300 hover:text-teal-400 transition-colors">Projects</a>
+                <a href="#contact" class="nav-link text-stone-300 hover:text-teal-400 transition-colors">Contact</a>
+            </div>
+             <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-stone-100 focus:outline-none">
+                    <span class="text-2xl">☰</span>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-stone-900">
+            <a href="#about" class="block py-2 px-6 text-stone-300 hover:bg-stone-800">About</a>
+            <a href="#experience" class="block py-2 px-6 text-stone-300 hover:bg-stone-800">Experience</a>
+            <a href="#skills" class="block py-2 px-6 text-stone-300 hover:bg-stone-800">Skills</a>
+            <a href="#certifications" class="block py-2 px-6 text-stone-300 hover:bg-stone-800">Certifications</a>
+            <a href="#projects" class="block py-2 px-6 text-stone-300 hover:bg-stone-800">Projects</a>
+            <a href="#contact" class="block py-2 px-6 text-stone-300 hover:bg-stone-800">Contact</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-16">
+
+        <section id="hero" class="min-h-[60vh] flex flex-col justify-center items-start text-left reveal-on-scroll">
+            <div class="max-w-3xl">
+                <h1 class="text-4xl md:text-6xl font-extrabold text-stone-100 leading-tight">
+                    Shukdev Sharma
+                </h1>
+                <p class="mt-4 text-xl md:text-2xl text-teal-400 font-semibold">
+                    Cloud & Data Engineer | Building Scalable, High-Performance Systems
+                </p>
+                <p class="mt-6 text-lg text-stone-300">
+                    I specialize in designing and deploying robust cloud infrastructure and data pipelines that drive efficiency, cut costs, and deliver measurable performance gains. With a foundation in software engineering and a passion for automation, I transform complex technical challenges into elegant, impactful solutions.
+                </p>
+                <div class="mt-8 flex items-center space-x-4">
+                    <a href="https://linkedin.com/in/shukdev" target="_blank" class="bg-teal-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-teal-600 transition-colors shadow-lg transform hover:scale-105">
+                        Connect on LinkedIn
+                    </a>
+                    <a href="https://github.com/shukdev" target="_blank" class="text-stone-300 font-semibold py-3 px-6 rounded-lg hover:bg-stone-800 transition-colors border border-stone-700 transform hover:scale-105">
+                        View GitHub
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="py-16 md:py-24 reveal-on-scroll">
+            <div class="grid md:grid-cols-5 gap-12 items-center">
+                <div class="md:col-span-2">
+                     <div class="bg-stone-800 rounded-lg w-full h-80 md:h-96 flex items-center justify-center shadow-lg">
+                         <span class="text-stone-500 text-center p-4">A professional headshot would be displayed here for a personal touch.</span>
+                    </div>
+                </div>
+                <div class="md:col-span-3">
+                    <h2 class="text-3xl font-bold text-stone-100 mb-4">About Me</h2>
+                     <p class="text-stone-300 text-lg mb-4">
+                        From optimizing chipset performance at Intel to engineering terabyte-scale data solutions at Cognizant, my career has been a journey of continuous learning and impact. I'm driven by the challenge of architecting systems that are not just functional, but exceptionally efficient and scalable. My approach combines deep technical knowledge in Python, Java, and AWS with a relentless focus on automation and quantifiable results.
+                    </p>
+                    <p class="text-stone-300 text-lg">
+                        Currently pursuing my Master's in Computer Science at Northern Arizona University and serving as a Teaching Assistant, I'm passionate about both building the future of technology and mentoring the next generation of engineers. I believe the most elegant solutions arise from a clear understanding of the problem, collaborative teamwork, and a dedication to engineering excellence.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="achievements" class="py-16 md:py-24 bg-stone-800 rounded-2xl reveal-on-scroll">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-100">Key Career Achievements</h2>
+                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto">A snapshot of the value and impact I've delivered in my professional roles.</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center">
+                <div class="bg-teal-700 p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <p class="text-4xl font-extrabold text-teal-100">94%</p>
+                    <p class="mt-2 text-sm font-medium text-teal-200">Latency Reduction</p>
+                </div>
+                <div class="bg-sky-700 p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <p class="text-4xl font-extrabold text-sky-100">30%</p>
+                    <p class="mt-2 text-sm font-medium text-sky-200">ETL Time Saved</p>
+                </div>
+                <div class="bg-amber-700 p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <p class="text-4xl font-extrabold text-amber-100">$43k+</p>
+                    <p class="mt-2 text-sm font-medium text-amber-200">Annual Cost Savings</p>
+                </div>
+                <div class="bg-rose-700 p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <p class="text-4xl font-extrabold text-rose-100">10TB+</p>
+                    <p class="mt-2 text-sm font-medium text-rose-200">Data Migrated</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="experience" class="py-16 md:py-24 reveal-on-scroll">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-stone-100">Professional Experience</h2>
+                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto">An interactive overview of my career journey, highlighting key roles and responsibilities. Click any role to expand.</p>
+            </div>
+            <div class="relative max-w-3xl mx-auto">
+                <div class="absolute left-1/2 -translate-x-1/2 h-full w-0.5 bg-stone-700"></div>
+                <div id="timeline-container" class="space-y-12">
+                </div>
+            </div>
+        </section>
+        
+        <section id="skills" class="py-16 md:py-24 bg-stone-800 rounded-2xl reveal-on-scroll">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-100">Technical Skills</h2>
+                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto">A summary of my technical toolkit, from languages and databases to cloud and DevOps platforms.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+                <div id="skills-languages"></div>
+                <div id="skills-databases"></div>
+                <div id="skills-cloud"></div>
+                <div id="skills-frameworks"></div>
+            </div>
+            <div class="chart-container">
+                <canvas id="skillsChart"></canvas>
+            </div>
+        </section>
+
+        <section id="certifications" class="py-16 md:py-24 reveal-on-scroll">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-100">Certifications</h2>
+                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto">My professional certifications demonstrating validated expertise.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto" id="certifications-container">
+                <!-- Certifications will be rendered here by JavaScript -->
+            </div>
+        </section>
+
+        <section id="projects" class="py-16 md:py-24 reveal-on-scroll">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-100">Project Case Studies</h2>
+                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto">A deeper look into some of my most impactful work. Select a project to view the details.</p>
+            </div>
+            <div>
+                <div id="project-tabs" class="flex flex-wrap justify-center gap-2 mb-8">
+                </div>
+                <div id="project-content" class="bg-stone-800 p-8 rounded-2xl min-h-[300px] shadow-lg">
+                </div>
+            </div>
+        </section>
+
+        <section id="education" class="py-16 md:py-24 reveal-on-scroll">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-100">Education & Leadership</h2>
+                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto">My academic background and experience in mentoring roles.</p>
+            </div>
+             <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div class="bg-stone-800 p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <h3 class="font-bold text-xl text-stone-100">Northern Arizona University</h3>
+                    <p class="text-teal-400 font-semibold">Master of Science, Computer Science</p>
+                    <p class="text-stone-400 text-sm mt-1">Aug 2024 - Present</p>
+                </div>
+                <div class="bg-stone-800 p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <h3 class="font-bold text-xl text-stone-100">Chandigarh University</h3>
+                    <p class="text-teal-400 font-semibold">Bachelor of Science, Computer Science</p>
+                    <p class="text-stone-400 text-sm mt-1">Aug 2018 - May 2022</p>
+                </div>
+                <div class="bg-stone-800 p-8 rounded-xl shadow-lg md:col-span-2 transform hover:scale-105 transition-transform duration-300">
+                    <h3 class="font-bold text-xl text-stone-100">Teaching Assistant (Data Structures & Python)</h3>
+                    <p class="text-teal-400 font-semibold">Northern Arizona University</p>
+                    <p class="text-stone-400 text-sm mt-1">Spring 2025 - Present</p>
+                    <ul class="mt-4 space-y-2 list-disc list-inside text-stone-300">
+                        <li>Assisting students in understanding complex algorithms and data structures.</li>
+                        <li>Providing one-on-one mentorship and debugging assistance to improve problem-solving skills.</li>
+                        <li>Grading assignments and evaluating coding projects for best practices and efficiency.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="contact" class="py-16 md:py-24 text-center reveal-on-scroll">
+            <h2 class="text-3xl font-bold text-stone-100">Let's Connect</h2>
+            <p class="mt-4 text-lg text-stone-300 max-w-xl mx-auto">
+                I'm always open to discussing new opportunities, challenging projects, or just talking tech. Feel free to reach out.
+            </p>
+            <div class="mt-8">
+                 <a href="mailto:shukdev.nau@gmail.com" class="bg-teal-500 text-white font-bold py-4 px-8 rounded-lg hover:bg-teal-600 transition-colors text-lg shadow-lg transform hover:scale-105">
+                    shukdev.nau@gmail.com
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-stone-950 text-stone-300 py-6">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2025 Shukdev Sharma. All Rights Reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const experienceData = [
+                {
+                    role: "Cloud Data Engineer",
+                    company: "Cognizant",
+                    date: "Jun 2022 - Aug 2024",
+                    details: [
+                        "Developed 10+ scalable interfaces (Python, AWS, REST APIs), achieving 100% automation and saving 200+ hours/year.",
+                        "Enhanced ETL pipelines (Talend, Snowflake, AWS), reducing processing time by 30%. Migrated 10TB+ SQL Server data to Snowflake, enabling 4x faster queries.",
+                        "Designed and deployed a serverless data pipeline (AWS Lambda, Glue, Kinesis) processing 10K+ events/sec with <500ms latency, improving performance by 25% and cutting costs by $18K/year.",
+                        "Optimized cloud infrastructure, cutting costs by 25% ($25K/year) through rightsizing 50+ EC2 instances and auto-scaling workloads, maintaining 99.9% uptime."
+                    ]
+                },
+                {
+                    role: "Software Engineer Intern",
+                    company: "Cognizant",
+                    date: "Jan 2022 - Jun 2022",
+                    details: [
+                        "Refactored a legacy Java application with Redis caching, reducing latency by 94% (from 2.1s to 0.12s) and code complexity by 40%.",
+                        "Built a query builder (Spring Boot, Angular) for 10M+ MongoDB tables, optimizing Spark orchestration to cut query latency by 72% (from 14s to 4s).",
+                        "Consolidated 150+ REST APIs into a single event-driven pipeline, halving deployment cycles and scaling throughput to 5,000 transactions/sec."
+                    ]
+                },
+                {
+                    role: "Performance Engineer Intern",
+                    company: "Intel Corporation",
+                    date: "May 2021 - Aug 2021",
+                    details: [
+                        "Executed 50+ performance test scenarios for Chromebook chipsets using Sysbench and Geekbench.",
+                        "Identified and analyzed performance bottlenecks, improving CPU and memory efficiency by 15% with profiling tools like Perf and VTune.",
+                        "Collaborated with cross-functional teams on debugging, contributing to a 10% reduction in power consumption."
+                    ]
+                }
+            ];
+
+            const skillsData = {
+                languages: {
+                    title: "Languages",
+                    icon: "💻",
+                    items: ["Python", "Java", "SQL", "JavaScript", "HTML/CSS", "C/C++", "GraphQL"]
+                },
+                databases: {
+                    title: "Databases",
+                    icon: "🗃️",
+                    items: ["Snowflake", "Microsoft SQL Server", "MongoDB", "MYSQL", "Oracle"]
+                },
+                cloud: {
+                    title: "Cloud & DevOps",
+                    icon: "☁️",
+                    items: ["AWS", "Azure", "CI/CD", "Docker", "Kubernetes", "Terraform", "Git/Github"]
+                },
+                frameworks: {
+                    title: "Technologies & Frameworks",
+                    icon: "🛠️",
+                    items: ["Spring Boot", "Angular", "Linux", "Jenkins", "JUnit", "TensorFlow"]
+                }
+            };
+
+            const certificationsData = [
+                {
+                    name: "AWS Certified Solutions Architect – Associate",
+                    issuer: "Amazon Web Services",
+                    date: "Issued: [Date, if known]",
+                    link: "#" // Replace with actual certification link if available
+                },
+                {
+                    name: "Azure Fundamentals (AZ-900)",
+                    issuer: "Microsoft Azure",
+                    date: "Issued: [Date, if known]",
+                    link: "#" // Replace with actual certification link if available
+                },
+                {
+                    name: "Blockchain Developer Training",
+                    issuer: "Simplilearn SkillUP",
+                    date: "Issued: 19th July 2025",
+                    link: "https://simpli-web.app.link/e/R9lB3NCo8Ub" // Actual link from provided PDF
+                }
+            ];
+            
+            const projectsData = [
+                {
+                    id: 'serverless',
+                    title: 'Serverless Data Pipeline',
+                    content: `
+                        <h4 class="font-bold text-xl mb-2 text-stone-100">Objective</h4>
+                        <p class="text-stone-300 mb-4">Design and deploy a real-time, high-throughput, serverless data synchronization pipeline to replace a costly and slow legacy system.</p>
+                        <h4 class="font-bold text-xl mb-2 text-stone-100">My Role & Solution</h4>
+                        <p class="text-stone-300 mb-4">As the lead engineer, I architected a solution using AWS Lambda, Kinesis, and Glue. This pipeline ingested, transformed, and loaded data in real-time. I wrote the core processing logic in Python, configured the event stream with Kinesis, and set up automated ETL jobs with Glue.</p>
+                        <h4 class="font-bold text-xl mb-2 text-stone-100">Key Outcomes</h4>
+                        <ul class="list-disc list-inside text-stone-300 space-y-2">
+                            <li>Processed over <strong>10,000 events/second</strong> with less than <strong>500ms latency</strong>.</li>
+                            <li>Improved overall system performance by <strong>25%</strong>.</li>
+                            <li>Reduced annual operational costs by <strong>$18,000</strong>.</li>
+                        </ul>
+                         <p class="mt-4 text-sm text-stone-400"><strong>Technologies:</strong> AWS Lambda, AWS Glue, AWS Kinesis, Python, Snowflake</p>
+                    `
+                },
+                {
+                    id: 'migration',
+                    title: 'Cloud Data Migration',
+                    content: `
+                        <h4 class="font-bold text-xl mb-2 text-stone-100">Objective</h4>
+                        <p class="text-stone-300 mb-4">Migrate over 10TB of critical business data from on-premise Microsoft SQL Server to the cloud-native Snowflake data warehouse to improve query performance and data ingestion speed.</p>
+                        <h4 class="font-bold text-xl mb-2 text-stone-100">My Role & Solution</h4>
+                        <p class="text-stone-300 mb-4">I led the migration process, which involved enhancing existing ETL pipelines using Talend and custom Python scripts. I designed the schema in Snowflake, managed the data transfer process ensuring data integrity, and optimized the new pipelines for Snowflake's architecture.</p>
+                        <h4 class="font-bold text-xl mb-2 text-stone-100">Key Outcomes</h4>
+                        <ul class="list-disc list-inside text-stone-300 space-y-2">
+                            <li>Enabled <strong>4x faster queries</strong> for business intelligence dashboards.</li>
+                            <li>Achieved <strong>90% faster data ingestion</strong> compared to the old system.</li>
+                            <li>Completed the migration with <strong>zero downtime</strong> for production systems.</li>
+                        </ul>
+                        <p class="mt-4 text-sm text-stone-400"><strong>Technologies:</strong> Snowflake, MS SQL Server, Talend, AWS, Python</p>
+                    `
+                },
+                 {
+                    id: 'refactor',
+                    title: 'Legacy App Refactoring',
+                    content: `
+                        <h4 class="font-bold text-xl mb-2 text-stone-100">Objective</h4>
+                        <p class="text-stone-300 mb-4">Modernize a monolithic legacy Java application to improve performance, reduce code complexity, and decrease debugging time.</p>
+                        <h4 class="font-bold text-xl mb-2 text-stone-100">My Role & Solution</h4>
+                        <p class="text-stone-300 mb-4">I took charge of refactoring the core file I/O modules and integrating a Redis cache for frequently accessed data. This involved modularizing the codebase, writing new unit tests with JUnit, and implementing the caching logic to minimize database hits.</p>
+                        <h4 class="font-bold text-xl mb-2 text-stone-100">Key Outcomes</h4>
+                        <ul class="list-disc list-inside text-stone-300 space-y-2">
+                            <li>Slashed application latency by <strong>94%</strong> (from 2.1s to 0.12s).</li>
+                            <li>Reduced code complexity by <strong>40%</strong>, as measured by SonarQube.</li>
+                            <li>Cut average debugging time by <strong>30%</strong> due to improved readability.</li>
+                        </ul>
+                        <p class="mt-4 text-sm text-stone-400"><strong>Technologies:</strong> Java, Spring Boot, Redis, JUnit, SonarQube</p>
+                    `
+                }
+            ];
+
+            function renderExperience() {
+                const container = document.getElementById('timeline-container');
+                container.innerHTML = experienceData.map((item, index) => `
+                    <div class="relative timeline-item">
+                        <div class="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-4 h-4 bg-teal-400 rounded-full border-4 border-stone-900"></div>
+                        <div class="${index % 2 === 0 ? 'md:ml-auto md:pl-12' : 'md:mr-auto md:pr-12'} md:w-1/2 relative">
+                            <button class="w-full text-left bg-stone-800 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 timeline-item-trigger transform hover:scale-[1.02]">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <p class="text-xs text-stone-400">${item.date}</p>
+                                        <h3 class="font-bold text-xl text-stone-100 mt-1">${item.role}</h3>
+                                        <p class="font-semibold text-teal-400">${item.company}</p>
+                                    </div>
+                                    <span class="arrow text-teal-400 text-2xl font-bold">&#x25B8;</span>
+                                </div>
+                            </button>
+                            <div class="timeline-item-content mt-4 bg-stone-800 p-6 rounded-xl shadow-inner">
+                                <ul class="space-y-2 list-disc list-inside text-stone-300">
+                                    ${item.details.map(detail => `<li>${detail}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            function handleExperienceToggle() {
+                const triggers = document.querySelectorAll('.timeline-item-trigger');
+                triggers.forEach(trigger => {
+                    trigger.addEventListener('click', () => {
+                        const content = trigger.nextElementSibling;
+                        const arrow = trigger.querySelector('.arrow');
+                        content.classList.toggle('open');
+                        arrow.classList.toggle('rotated');
+                    });
+                });
+            }
+            
+            function renderSkills() {
+                Object.keys(skillsData).forEach(key => {
+                    const skill = skillsData[key];
+                    const container = document.getElementById(`skills-${key}`);
+                    if (container) { // Ensure container exists before trying to render
+                        let itemsHtml = skill.items.map(item => `<li class="flex items-center"><span class="bg-teal-700 text-teal-100 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">${item}</span></li>`).join('');
+                        container.innerHTML = `
+                            <h3 class="text-xl font-bold mb-4 flex items-center text-stone-100"><span class="text-2xl mr-3">${skill.icon}</span> ${skill.title}</h3>
+                            <ul class="flex flex-wrap gap-2">
+                               ${itemsHtml}
+                            </ul>
+                        `;
+                    }
+                });
+            }
+
+            function renderCertifications() {
+                const container = document.getElementById('certifications-container');
+                container.innerHTML = certificationsData.map(cert => `
+                    <div class="bg-stone-800 p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                        <h3 class="font-bold text-xl text-stone-100">${cert.name}</h3>
+                        <p class="text-teal-400 font-semibold">${cert.issuer}</p>
+                        <p class="text-stone-400 text-sm mt-1">${cert.date}</p>
+                        ${cert.link && cert.link !== '#' ? `<a href="${cert.link}" target="_blank" class="text-teal-500 hover:underline text-sm mt-2 block">View Credential</a>` : ''}
+                    </div>
+                `).join('');
+            }
+            
+            function renderProjects() {
+                const tabsContainer = document.getElementById('project-tabs');
+                const contentContainer = document.getElementById('project-content');
+                
+                tabsContainer.innerHTML = projectsData.map((project, index) => `
+                    <button class="tab-btn px-4 py-2 rounded-lg font-semibold transition-colors ${index === 0 ? 'active' : ''}" data-id="${project.id}">
+                        ${project.title}
+                    </button>
+                `).join('');
+                
+                contentContainer.innerHTML = projectsData.map((project, index) => `
+                    <div class="project-pane ${index !== 0 ? 'hidden' : ''}" id="${project.id}">
+                        ${project.content}
+                    </div>
+                `).join('');
+            }
+
+            function handleProjectTabs() {
+                const tabs = document.querySelectorAll('.tab-btn');
+                const panes = document.querySelectorAll('.project-pane');
+                
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        tabs.forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        
+                        const targetId = tab.dataset.id;
+                        panes.forEach(pane => {
+                            if (pane.id === targetId) {
+                                pane.classList.remove('hidden');
+                            } else {
+                                pane.classList.add('hidden');
+                            }
+                        });
+                    });
+                });
+            }
+
+            function createSkillsChart() {
+                const ctx = document.getElementById('skillsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Python', 'Java', 'AWS', 'Snowflake', 'SQL', 'Spring Boot', 'Angular'],
+                        datasets: [{
+                            label: 'Proficiency & Experience',
+                            data: [95, 85, 95, 90, 90, 80, 75],
+                            backgroundColor: 'rgba(45, 212, 191, 0.6)', /* Teal 400 with opacity */
+                            borderColor: 'rgba(45, 212, 191, 1)', /* Teal 400 */
+                            borderWidth: 1,
+                            borderRadius: 4,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    color: '#a1a1aa' /* Zinc 400 */
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            },
+                             y: {
+                                ticks: {
+                                    color: '#a1a1aa' /* Zinc 400 */
+                                },
+                                grid: {
+                                    color: '#3f3f46' /* Zinc 700 */
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: true,
+                                backgroundColor: '#27272a', /* Zinc 800 */
+                                titleFont: { weight: 'bold' },
+                                bodyFont: { size: 14 },
+                                titleColor: '#f4f4f5', /* Zinc 100 */
+                                bodyColor: '#e4e4e7', /* Zinc 200 */
+                                callbacks: {
+                                    label: function(context) {
+                                        return ` Proficiency: ${context.raw}%`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function handleMobileMenu() {
+                const button = document.getElementById('mobile-menu-button');
+                const menu = document.getElementById('mobile-menu');
+                const links = menu.querySelectorAll('a');
+
+                button.addEventListener('click', () => {
+                    menu.classList.toggle('hidden');
+                });
+                
+                links.forEach(link => {
+                    link.addEventListener('click', () => {
+                         menu.classList.add('hidden');
+                    });
+                })
+            }
+            
+            function handleNavScroll() {
+                const sections = document.querySelectorAll('main section');
+                const navLinks = document.querySelectorAll('.nav-link');
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            navLinks.forEach(link => {
+                                link.classList.toggle('active', link.getAttribute('href').substring(1) === entry.target.id);
+                            });
+                        }
+                    });
+                }, { rootMargin: "-50% 0px -50% 0px" });
+
+                sections.forEach(section => {
+                    observer.observe(section);
+                });
+            }
+
+            function handleScrollReveal() {
+                const revealElements = document.querySelectorAll('.reveal-on-scroll');
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('revealed');
+                            observer.unobserve(entry.target); // Stop observing once revealed
+                        }
+                    });
+                }, { threshold: 0.1 }); // Trigger when 10% of the element is visible
+
+                revealElements.forEach(element => {
+                    observer.observe(element);
+                });
+            }
+
+            // Header shrink/expand on scroll
+            let lastScrollY = window.scrollY;
+            const header = document.getElementById('header');
+
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 0) {
+                    header.classList.remove('py-6');
+                    header.classList.add('py-4', 'shadow-xl');
+                } else {
+                    header.classList.remove('py-4', 'shadow-xl');
+                    header.classList.add('py-6');
+                }
+
+                // Optional: Hide/show header on scroll direction
+                // if (window.scrollY > lastScrollY && window.scrollY > 100) {
+                //     header.classList.add('-translate-y-full');
+                // } else {
+                //     header.classList.remove('-translate-y-full');
+                // }
+                // lastScrollY = window.scrollY;
+            });
+
+
+            renderExperience();
+            handleExperienceToggle();
+            renderSkills();
+            renderCertifications(); // Call the new render function
+            renderProjects();
+            handleProjectTabs();
+            createSkillsChart();
+            handleMobileMenu();
+            handleNavScroll();
+            handleScrollReveal();
+        });
+    </script>
+</body>
+</html>
