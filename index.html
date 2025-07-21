@@ -8,11 +8,11 @@
     <!-- Chosen Palette: Dark Calm Neutral -->
     <!-- Application Structure Plan: The SPA is designed as a single-page, top-to-bottom narrative to guide a recruiter through a compelling story of Shukdev's capabilities. It starts with a high-impact Hero section for immediate identity, followed by a scannable dashboard of his key quantifiable Achievements to quickly establish value. An interactive, chronological Experience timeline allows users to explore his career path without being overwhelmed. This is followed by a detailed, categorized Skills section with a bar chart for visual comparison. The core of the site is the interactive Projects section, structured as tabbed case studies to provide depth on his most significant work. The structure concludes with Education/Leadership and a clear Contact CTA. This user flow—from broad impression to deep evidence—is designed to be more persuasive and user-friendly than a simple resume recreation. -->
     <!-- Visualization & Content Choices: 
-        - Report Info: Key quantifiable results (e.g., "30% faster ETL", "94% latency reduction"). Goal: Inform & Impress. Viz/Method: HTML/Tailwind "Stat Cards" with large numbers. Interaction: None. Justification: Provides immediate, high-impact evidence of his value.
+        - Report Info: Key quantifiable results (e.g., "30% faster ETL", "94% latency reduction"). Goal: Inform & Impress. Viz/Method: HTML/Tailwind "Stat Cards" with large numbers. Interaction: Counter animation on scroll. Justification: Provides immediate, high-impact evidence of his value with dynamic reveal.
         - Report Info: Chronological work history. Goal: Organize & Compare. Viz/Method: HTML/CSS vertical timeline. Interaction: JS-powered accordion toggle for each role's details. Justification: More engaging than a static list; prevents information overload by hiding details until requested.
         - Report Info: Technical skills list. Goal: Compare & Inform. Viz/Method: Categorized lists and a Chart.js Bar Chart. Interaction: Hover tooltips on the chart. Justification: The bar chart offers a quick visual summary of his core competencies, which is faster to parse than reading a list.
         - Report Info: Detailed project descriptions from his experience. Goal: Organize & Detail. Viz/Method: Tabbed content panes. Interaction: JS-powered tab switching. Justification: Allows for in-depth case studies without cluttering the page, enabling users to focus on one project at a time.
-        - 3D Design: Abstract geometric shape in hero section. Goal: Enhance visual appeal & modern feel. Viz/Method: Three.js canvas. Interaction: Subtle animation, mouse interaction for rotation. Justification: Adds a dynamic, high-tech aesthetic without distracting from content.
+        - 3D Design: Abstract geometric shape in hero section. Goal: Enhance visual appeal & modern feel. Viz/Method: Three.js canvas. Interaction: Subtle animation, mouse interaction for rotation, parallax on scroll, color changing. Justification: Adds a dynamic, high-tech aesthetic without distracting from content.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
@@ -38,11 +38,11 @@
             margin-right: auto;
             height: 350px;
             max-height: 400px;
-            background-color: rgba(41, 41, 41, 0.6); /* Dark background for chart area with transparency */
+            background-color: rgba(41, 41, 41, 0.7); /* Dark background for chart area with transparency */
             border-radius: 0.75rem; /* rounded-xl */
             padding: 1.5rem; /* p-6 */
-            backdrop-filter: blur(8px); /* Glassmorphism effect */
-            -webkit-backdrop-filter: blur(8px); /* For Safari */
+            backdrop-filter: blur(12px); /* Glassmorphism effect */
+            -webkit-backdrop-filter: blur(12px); /* For Safari */
             border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
         }
         @media (min-width: 768px) {
@@ -54,9 +54,19 @@
             color: #2dd4bf; /* Teal 400 */
             font-weight: 600;
         }
+        .tab-btn {
+            background-color: rgba(39, 39, 42, 0.5); /* Zinc 800 with transparency for non-active tabs */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #a1a1aa; /* Zinc 400 */
+        }
         .tab-btn.active {
             background-color: #2dd4bf; /* Teal 400 */
             color: #ffffff;
+            backdrop-filter: blur(0px); /* Remove blur for active tab to make it solid */
+            -webkit-backdrop-filter: blur(0px);
+            border: 1px solid #2dd4bf; /* Solid border for active tab */
         }
         .timeline-item-content {
             transition: all 0.3s ease-in-out;
@@ -84,33 +94,33 @@
         }
         /* Glassmorphism base styles */
         .glass-effect {
-            background-color: rgba(39, 39, 42, 0.6); /* Zinc 800 with transparency */
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(39, 39, 42, 0.7); /* Zinc 800 with increased transparency */
+            backdrop-filter: blur(12px); /* Increased blur */
+            -webkit-backdrop-filter: blur(12px); /* For Safari */
+            border: 1px solid rgba(255, 255, 255, 0.15); /* Slightly more prominent border */
         }
         .glass-effect-alt {
-             background-color: rgba(20, 184, 166, 0.2); /* Teal 500 with transparency */
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+             background-color: rgba(20, 184, 166, 0.3); /* Teal 500 with transparency */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .glass-effect-alt-sky {
-             background-color: rgba(14, 165, 233, 0.2); /* Sky 500 with transparency */
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+             background-color: rgba(14, 165, 233, 0.3); /* Sky 500 with transparency */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .glass-effect-alt-amber {
-             background-color: rgba(245, 158, 11, 0.2); /* Amber 500 with transparency */
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+             background-color: rgba(245, 158, 11, 0.3); /* Amber 500 with transparency */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .glass-effect-alt-rose {
-             background-color: rgba(225, 29, 72, 0.2); /* Rose 500 with transparency */
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+             background-color: rgba(225, 29, 72, 0.3); /* Rose 500 with transparency */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
@@ -212,20 +222,20 @@
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center">
                 <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt">
-                    <p class="text-4xl font-extrabold text-teal-100">94%</p>
+                    <p class="text-4xl font-extrabold text-teal-100 achievement-number" data-target="94">0</p>
                     <p class="mt-2 text-sm font-medium text-teal-200">Latency Reduction</p>
                 </div>
                 <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-sky">
-                    <p class="text-4xl font-extrabold text-sky-100">30%</p>
+                    <p class="text-4xl font-extrabold text-sky-100 achievement-number" data-target="30">0</p>
                     <p class="mt-2 text-sm font-medium text-sky-200">ETL Time Saved</p>
                 </div>
                 <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-amber">
-                    <p class="text-4xl font-extrabold text-amber-100">$43k+</p>
-                    <p class="mt-2 text-sm font-medium text-amber-200">Annual Cost Savings</p>
+                    <p class="text-4xl font-extrabold text-amber-100 achievement-number" data-target="43">0</p>
+                    <p class="mt-2 text-sm font-medium text-amber-200">$<span class="achievement-number-suffix">0</span>k+</p>
                 </div>
                 <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-rose">
-                    <p class="text-4xl font-extrabold text-rose-100">10TB+</p>
-                    <p class="mt-2 text-sm font-medium text-rose-200">Data Migrated</p>
+                    <p class="text-4xl font-extrabold text-rose-100 achievement-number" data-target="10">0</p>
+                    <p class="mt-2 text-sm font-medium text-rose-200"><span class="achievement-number-suffix">0</span>TB+</p>
                 </div>
             </div>
         </section>
@@ -665,12 +675,50 @@
                 });
             }
 
+            // Function to animate numbers
+            function animateNumber(element, target, duration, isSuffix = false) {
+                let start = 0;
+                const startTime = performance.now();
+
+                function updateNumber(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const value = Math.floor(progress * target);
+
+                    if (isSuffix) {
+                        element.textContent = value;
+                    } else {
+                        element.textContent = value;
+                    }
+
+                    if (progress < 1) {
+                        requestAnimationFrame(updateNumber);
+                    }
+                }
+                requestAnimationFrame(updateNumber);
+            }
+
             function handleScrollReveal() {
                 const revealElements = document.querySelectorAll('.reveal-on-scroll');
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
                             entry.target.classList.add('revealed');
+                            // Specific animation for achievement numbers
+                            if (entry.target.id === 'achievements') {
+                                const achievementNumbers = entry.target.querySelectorAll('.achievement-number');
+                                achievementNumbers.forEach(numElement => {
+                                    const target = parseInt(numElement.dataset.target);
+                                    // Check if the number has a suffix span
+                                    const suffixSpan = numElement.nextElementSibling && numElement.nextElementSibling.classList.contains('achievement-number-suffix') ? numElement.nextElementSibling : null;
+                                    
+                                    if (suffixSpan) {
+                                        animateNumber(suffixSpan, target, 1500, true); // Animate the suffix span
+                                    } else {
+                                        animateNumber(numElement, target, 1500); // Animate the main number
+                                    }
+                                });
+                            }
                             observer.unobserve(entry.target); // Stop observing once revealed
                         }
                     });
@@ -693,14 +741,6 @@
                     header.classList.remove('py-4', 'shadow-xl');
                     header.classList.add('py-6');
                 }
-
-                // Optional: Hide/show header on scroll direction
-                // if (window.scrollY > lastScrollY && window.scrollY > 100) {
-                //     header.classList.add('-translate-y-full');
-                // } else {
-                //     header.classList.remove('-translate-y-full');
-                // }
-                // lastScrollY = window.scrollY;
             });
 
             // --- Three.js 3D Background Setup ---
@@ -725,16 +765,16 @@
 
                 // Objects
                 const objectTypes = [
-                    { geometry: new THREE.IcosahedronGeometry(1.5, 0), color: 0x2dd4bf, opacity: 0.8 }, // Teal
-                    { geometry: new THREE.BoxGeometry(1.5, 1.5, 1.5), color: 0x0ea5e9, opacity: 0.7 }, // Sky
-                    { geometry: new THREE.TorusGeometry(1, 0.4, 16, 100), color: 0xf59e0b, opacity: 0.6 }, // Amber
-                    { geometry: new THREE.SphereGeometry(1.2, 32, 32), color: 0xe11d48, opacity: 0.5 }, // Rose
-                    { geometry: new THREE.OctahedronGeometry(1.3, 0), color: 0x8b5cf6, opacity: 0.7 } // Violet
+                    { geometry: new THREE.IcosahedronGeometry(1.5, 0), initialColor: 0x2dd4bf, opacity: 0.8 }, // Teal
+                    { geometry: new THREE.BoxGeometry(1.5, 1.5, 1.5), initialColor: 0x0ea5e9, opacity: 0.7 }, // Sky
+                    { geometry: new THREE.TorusGeometry(1, 0.4, 16, 100), initialColor: 0xf59e0b, opacity: 0.6 }, // Amber
+                    { geometry: new THREE.SphereGeometry(1.2, 32, 32), initialColor: 0xe11d48, opacity: 0.5 }, // Rose
+                    { geometry: new THREE.OctahedronGeometry(1.3, 0), initialColor: 0x8b5cf6, opacity: 0.7 } // Violet
                 ];
 
                 objectTypes.forEach((type, index) => {
                     const material = new THREE.MeshStandardMaterial({
-                        color: type.color,
+                        color: type.initialColor,
                         roughness: 0.5,
                         metalness: 0.8,
                         transparent: true,
@@ -794,6 +834,9 @@
             function animate3D() {
                 requestAnimationFrame(animate3D);
 
+                const time = Date.now() * 0.0001; // Slower time for color change
+                const scrollFactor = window.scrollY * 0.0001; // Factor based on scroll position
+
                 objects.forEach((obj, index) => {
                     // Apply subtle automatic rotation, slightly different for each object
                     obj.rotation.x += 0.001 + (index * 0.0001);
@@ -804,8 +847,13 @@
                     obj.rotation.y += (mouseX - obj.rotation.y) * 0.005; // Reduced influence
 
                     // Subtle floating/movement
-                    obj.position.y = Math.sin(Date.now() * 0.0005 + index) * 0.5;
-                    obj.position.x = Math.cos(Date.now() * 0.0004 + index) * 0.5;
+                    obj.position.y = Math.sin(time + index * 0.5 + scrollFactor) * 0.5; // Affected by scroll
+                    obj.position.x = Math.cos(time + index * 0.5 + scrollFactor) * 0.5; // Affected by scroll
+                    obj.position.z = Math.sin(time * 0.7 + index * 0.3 + scrollFactor) * 0.3; // Slight depth movement
+
+                    // Color change based on time and object index for variation
+                    const hue = (time * 0.1 + index * 0.1) % 1; // Cycle hue from 0 to 1
+                    obj.material.color.setHSL(hue, 0.8, 0.6); // S, L can be adjusted
                 });
 
                 renderer.render(scene, camera);
