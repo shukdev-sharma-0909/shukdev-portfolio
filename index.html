@@ -12,11 +12,13 @@
         - Report Info: Chronological work history. Goal: Organize & Compare. Viz/Method: HTML/CSS vertical timeline. Interaction: JS-powered accordion toggle for each role's details. Justification: More engaging than a static list; prevents information overload by hiding details until requested.
         - Report Info: Technical skills list. Goal: Compare & Inform. Viz/Method: Categorized lists and a Chart.js Bar Chart. Interaction: Hover tooltips on the chart. Justification: The bar chart offers a quick visual summary of his core competencies, which is faster to parse than reading a list.
         - Report Info: Detailed project descriptions from his experience. Goal: Organize & Detail. Viz/Method: Tabbed content panes. Interaction: JS-powered tab switching. Justification: Allows for in-depth case studies without cluttering the page, enabling users to focus on one project at a time.
+        - 3D Design: Abstract geometric shape in hero section. Goal: Enhance visual appeal & modern feel. Viz/Method: Three.js canvas. Interaction: Subtle animation, mouse interaction for rotation. Justification: Adds a dynamic, high-tech aesthetic without distracting from content.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -25,6 +27,8 @@
             font-family: 'Inter', sans-serif;
             background-color: #18181b; /* Zinc 900 */
             color: #f4f4f5; /* Zinc 100 */
+            position: relative; /* Needed for fixed canvas to position correctly */
+            min-height: 100vh; /* Ensure body takes full height */
         }
         .chart-container {
             position: relative;
@@ -34,9 +38,12 @@
             margin-right: auto;
             height: 350px;
             max-height: 400px;
-            background-color: #292929; /* Dark background for chart area */
+            background-color: rgba(41, 41, 41, 0.6); /* Dark background for chart area with transparency */
             border-radius: 0.75rem; /* rounded-xl */
             padding: 1.5rem; /* p-6 */
+            backdrop-filter: blur(8px); /* Glassmorphism effect */
+            -webkit-backdrop-filter: blur(8px); /* For Safari */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
         }
         @media (min-width: 768px) {
             .chart-container {
@@ -75,11 +82,59 @@
             opacity: 1;
             transform: translateY(0);
         }
+        /* Glassmorphism base styles */
+        .glass-effect {
+            background-color: rgba(39, 39, 42, 0.6); /* Zinc 800 with transparency */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-effect-alt {
+             background-color: rgba(20, 184, 166, 0.2); /* Teal 500 with transparency */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-effect-alt-sky {
+             background-color: rgba(14, 165, 233, 0.2); /* Sky 500 with transparency */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-effect-alt-amber {
+             background-color: rgba(245, 158, 11, 0.2); /* Amber 500 with transparency */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-effect-alt-rose {
+             background-color: rgba(225, 29, 72, 0.2); /* Rose 500 with transparency */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 3D Canvas specific styles for full background */
+        #background-3d-canvas {
+            position: fixed; /* Fixed to viewport */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2; /* Ensure it's behind everything but still visible */
+            opacity: 0.05; /* Very subtle background */
+        }
+        /* Main content needs a z-index higher than canvas */
+        main {
+            position: relative;
+            z-index: 1;
+        }
     </style>
 </head>
 <body class="antialiased">
+    <canvas id="background-3d-canvas"></canvas> <!-- Full background 3D canvas -->
 
-    <header id="header" class="bg-stone-900/80 backdrop-blur-md sticky top-0 z-50 transition-all duration-300 py-4 md:py-6">
+    <header id="header" class="bg-stone-900/60 backdrop-blur-md sticky top-0 z-50 transition-all duration-300 py-4 md:py-6">
         <nav class="container mx-auto px-6 flex justify-between items-center">
             <a href="#" class="text-xl font-bold text-stone-100">Shukdev Sharma</a>
             <div class="hidden md:flex items-center space-x-8">
@@ -96,7 +151,7 @@
                 </button>
             </div>
         </nav>
-        <div id="mobile-menu" class="hidden md:hidden bg-stone-900">
+        <div id="mobile-menu" class="hidden md:hidden bg-stone-900/80 backdrop-blur-md">
             <a href="#about" class="block py-2 px-6 text-stone-300 hover:bg-stone-800">About</a>
             <a href="#experience" class="block py-2 px-6 text-stone-300 hover:bg-stone-800">Experience</a>
             <a href="#skills" class="block py-2 px-6 text-stone-300 hover:bg-stone-800">Skills</a>
@@ -108,8 +163,9 @@
 
     <main class="container mx-auto px-6 py-8 md:py-16">
 
-        <section id="hero" class="min-h-[60vh] flex flex-col justify-center items-start text-left reveal-on-scroll">
-            <div class="max-w-3xl">
+        <section id="hero" class="min-h-[60vh] flex flex-col justify-center items-start text-left reveal-on-scroll relative overflow-hidden">
+            <!-- The 3D canvas is now outside this section, covering the whole body -->
+            <div class="max-w-3xl relative z-10"> <!-- Ensure content is above 3D canvas -->
                 <h1 class="text-4xl md:text-6xl font-extrabold text-stone-100 leading-tight">
                     Shukdev Sharma
                 </h1>
@@ -120,10 +176,10 @@
                     I specialize in designing and deploying robust cloud infrastructure and data pipelines that drive efficiency, cut costs, and deliver measurable performance gains. With a foundation in software engineering and a passion for automation, I transform complex technical challenges into elegant, impactful solutions.
                 </p>
                 <div class="mt-8 flex items-center space-x-4">
-                    <a href="https://www.linkedin.com/in/shukdev-sharma/" target="_blank" class="bg-teal-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-teal-600 transition-colors shadow-lg transform hover:scale-105">
+                    <a href="https://linkedin.com/in/shukdev" target="_blank" class="bg-teal-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-teal-600 transition-colors shadow-lg transform hover:scale-105">
                         Connect on LinkedIn
                     </a>
-                    <a href="https://github.com/Shukdev2471" target="_blank" class="text-stone-300 font-semibold py-3 px-6 rounded-lg hover:bg-stone-800 transition-colors border border-stone-700 transform hover:scale-105">
+                    <a href="https://github.com/shukdev" target="_blank" class="text-stone-300 font-semibold py-3 px-6 rounded-lg hover:bg-stone-800 transition-colors border border-stone-700 transform hover:scale-105">
                         View GitHub
                     </a>
                 </div>
@@ -133,7 +189,7 @@
         <section id="about" class="py-16 md:py-24 reveal-on-scroll">
             <div class="grid md:grid-cols-5 gap-12 items-center">
                 <div class="md:col-span-2">
-                     <div class="bg-stone-800 rounded-lg w-full h-80 md:h-96 flex items-center justify-center shadow-lg">
+                     <div class="bg-stone-800 rounded-lg w-full h-80 md:h-96 flex items-center justify-center shadow-lg glass-effect">
                          <span class="text-stone-500 text-center p-4">A professional headshot would be displayed here for a personal touch.</span>
                     </div>
                 </div>
@@ -149,25 +205,25 @@
             </div>
         </section>
 
-        <section id="achievements" class="py-16 md:py-24 bg-stone-800 rounded-2xl reveal-on-scroll">
+        <section id="achievements" class="py-16 md:py-24 rounded-2xl reveal-on-scroll glass-effect">
             <div class="text-center mb-12">
                 <h2 class="text-3xl font-bold text-stone-100">Key Career Achievements</h2>
                 <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto">A snapshot of the value and impact I've delivered in my professional roles.</p>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center">
-                <div class="bg-teal-700 p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt">
                     <p class="text-4xl font-extrabold text-teal-100">94%</p>
                     <p class="mt-2 text-sm font-medium text-teal-200">Latency Reduction</p>
                 </div>
-                <div class="bg-sky-700 p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-sky">
                     <p class="text-4xl font-extrabold text-sky-100">30%</p>
                     <p class="mt-2 text-sm font-medium text-sky-200">ETL Time Saved</p>
                 </div>
-                <div class="bg-amber-700 p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-amber">
                     <p class="text-4xl font-extrabold text-amber-100">$43k+</p>
                     <p class="mt-2 text-sm font-medium text-amber-200">Annual Cost Savings</p>
                 </div>
-                <div class="bg-rose-700 p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-rose">
                     <p class="text-4xl font-extrabold text-rose-100">10TB+</p>
                     <p class="mt-2 text-sm font-medium text-rose-200">Data Migrated</p>
                 </div>
@@ -186,7 +242,7 @@
             </div>
         </section>
         
-        <section id="skills" class="py-16 md:py-24 bg-stone-800 rounded-2xl reveal-on-scroll">
+        <section id="skills" class="py-16 md:py-24 rounded-2xl reveal-on-scroll glass-effect">
             <div class="text-center mb-12">
                 <h2 class="text-3xl font-bold text-stone-100">Technical Skills</h2>
                 <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto">A summary of my technical toolkit, from languages and databases to cloud and DevOps platforms.</p>
@@ -220,7 +276,7 @@
             <div>
                 <div id="project-tabs" class="flex flex-wrap justify-center gap-2 mb-8">
                 </div>
-                <div id="project-content" class="bg-stone-800 p-8 rounded-2xl min-h-[300px] shadow-lg">
+                <div id="project-content" class="rounded-2xl min-h-[300px] shadow-lg glass-effect">
                 </div>
             </div>
         </section>
@@ -231,17 +287,17 @@
                 <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto">My academic background and experience in mentoring roles.</p>
             </div>
              <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                <div class="bg-stone-800 p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                <div class="p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect">
                     <h3 class="font-bold text-xl text-stone-100">Northern Arizona University</h3>
                     <p class="text-teal-400 font-semibold">Master of Science, Computer Science</p>
                     <p class="text-stone-400 text-sm mt-1">Aug 2024 - Present</p>
                 </div>
-                <div class="bg-stone-800 p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                <div class="p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect">
                     <h3 class="font-bold text-xl text-stone-100">Chandigarh University</h3>
                     <p class="text-teal-400 font-semibold">Bachelor of Science, Computer Science</p>
                     <p class="text-stone-400 text-sm mt-1">Aug 2018 - May 2022</p>
                 </div>
-                <div class="bg-stone-800 p-8 rounded-xl shadow-lg md:col-span-2 transform hover:scale-105 transition-transform duration-300">
+                <div class="p-8 rounded-xl shadow-lg md:col-span-2 transform hover:scale-105 transition-transform duration-300 glass-effect">
                     <h3 class="font-bold text-xl text-stone-100">Teaching Assistant (Data Structures & Python)</h3>
                     <p class="text-teal-400 font-semibold">Northern Arizona University</p>
                     <p class="text-stone-400 text-sm mt-1">Spring 2025 - Present</p>
@@ -415,7 +471,7 @@
                     <div class="relative timeline-item">
                         <div class="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-4 h-4 bg-teal-400 rounded-full border-4 border-stone-900"></div>
                         <div class="${index % 2 === 0 ? 'md:ml-auto md:pl-12' : 'md:mr-auto md:pr-12'} md:w-1/2 relative">
-                            <button class="w-full text-left bg-stone-800 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 timeline-item-trigger transform hover:scale-[1.02]">
+                            <button class="w-full text-left p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 timeline-item-trigger transform hover:scale-[1.02] glass-effect">
                                 <div class="flex justify-between items-center">
                                     <div>
                                         <p class="text-xs text-stone-400">${item.date}</p>
@@ -425,7 +481,7 @@
                                     <span class="arrow text-teal-400 text-2xl font-bold">&#x25B8;</span>
                                 </div>
                             </button>
-                            <div class="timeline-item-content mt-4 bg-stone-800 p-6 rounded-xl shadow-inner">
+                            <div class="timeline-item-content mt-4 p-6 rounded-xl shadow-inner glass-effect">
                                 <ul class="space-y-2 list-disc list-inside text-stone-300">
                                     ${item.details.map(detail => `<li>${detail}</li>`).join('')}
                                 </ul>
@@ -466,7 +522,7 @@
             function renderCertifications() {
                 const container = document.getElementById('certifications-container');
                 container.innerHTML = certificationsData.map(cert => `
-                    <div class="bg-stone-800 p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect">
                         <h3 class="font-bold text-xl text-stone-100">${cert.name}</h3>
                         <p class="text-teal-400 font-semibold">${cert.issuer}</p>
                         <p class="text-stone-400 text-sm mt-1">${cert.date}</p>
@@ -646,6 +702,99 @@
                 // }
                 // lastScrollY = window.scrollY;
             });
+
+            // --- Three.js 3D Background Setup ---
+            let scene, camera, renderer, object;
+            let mouseX = 0, mouseY = 0;
+            let windowHalfX = window.innerWidth / 2;
+            let windowHalfY = window.innerHeight / 2;
+            const canvas = document.getElementById('background-3d-canvas'); // Target the full background canvas
+
+            function init3D() {
+                // Scene
+                scene = new THREE.Scene();
+
+                // Camera
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.z = 5;
+
+                // Renderer
+                renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+
+                // Object (IcosahedronGeometry for an abstract look)
+                const geometry = new THREE.IcosahedronGeometry(2, 0); // Radius 2, detail 0 (low-poly)
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0x2dd4bf, // Teal 400
+                    roughness: 0.5,
+                    metalness: 0.8,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                object = new THREE.Mesh(geometry, material);
+                scene.add(object);
+
+                // Lighting
+                const ambientLight = new THREE.AmbientLight(0x404040, 2); // soft white light
+                scene.add(ambientLight);
+
+                const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1);
+                directionalLight1.position.set(1, 1, 1).normalize();
+                scene.add(directionalLight1);
+
+                const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+                directionalLight2.position.set(-1, -1, -1).normalize();
+                scene.add(directionalLight2);
+
+
+                // Event Listeners for responsiveness and mouse interaction
+                window.addEventListener('resize', onWindowResize3D);
+                document.addEventListener('mousemove', onDocumentMouseMove3D);
+                document.addEventListener('touchmove', onDocumentTouchMove3D, { passive: false });
+            }
+
+            function onWindowResize3D() {
+                windowHalfX = window.innerWidth / 2;
+                windowHalfY = window.innerHeight / 2;
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            function onDocumentMouseMove3D(event) {
+                mouseX = (event.clientX - windowHalfX) * 0.001;
+                mouseY = (event.clientY - windowHalfY) * 0.001;
+            }
+
+            function onDocumentTouchMove3D(event) {
+                if (event.touches.length === 1) {
+                    event.preventDefault(); // Prevent scrolling
+                    mouseX = (event.touches[0].pageX - windowHalfX) * 0.001;
+                    mouseY = (event.touches[0].pageY - windowHalfY) * 0.001;
+                }
+            }
+
+            function animate3D() {
+                requestAnimationFrame(animate3D);
+
+                // Apply subtle automatic rotation
+                object.rotation.x += 0.001;
+                object.rotation.y += 0.001;
+
+                // Apply mouse/touch rotation
+                object.rotation.x += (mouseY - object.rotation.x) * 0.05;
+                object.rotation.y += (mouseX - object.rotation.y) * 0.05;
+
+                renderer.render(scene, camera);
+            }
+
+            // Initialize and animate 3D scene only after window is loaded
+            window.onload = function() {
+                init3D();
+                animate3D();
+            };
+            // --- End Three.js 3D Background Setup ---
 
 
             renderExperience();
