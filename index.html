@@ -8,7 +8,7 @@
     <!-- Chosen Palette: Dark Calm Neutral -->
     <!-- Application Structure Plan: The SPA is designed as a single-page, top-to-bottom narrative to guide a recruiter through a compelling story of Shukdev's capabilities. It starts with a high-impact Hero section for immediate identity, followed by a scannable dashboard of his key quantifiable Achievements to quickly establish value. An interactive, chronological Experience timeline allows users to explore his career path without being overwhelmed. This is followed by a detailed, categorized Skills section with a bar chart for visual comparison. The core of the site is the interactive Projects section, structured as tabbed case studies to provide depth on his most significant work. The structure concludes with Education/Leadership and a clear Contact CTA. This user flow—from broad impression to deep evidence—is designed to be more persuasive and user-friendly than a simple resume recreation. -->
     <!-- Visualization & Content Choices: 
-        - Report Info: Key quantifiable results (e.g., "30% faster ETL", "94% latency reduction"). Goal: Inform & Impress. Viz/Method: HTML/Tailwind "Stat Cards" with large numbers. Interaction: None. Justification: Provides immediate, high-impact evidence of his value.
+        - Report Info: Key quantifiable results (e.g., "30% faster ETL", "94% latency reduction"). Goal: Inform & Impress. Viz/Method: HTML/Tailwind "Stat Cards" with large numbers. Interaction: Counter animation on scroll. Justification: Provides immediate, high-impact evidence of his value with dynamic reveal.
         - Report Info: Chronological work history. Goal: Organize & Compare. Viz/Method: HTML/CSS vertical timeline. Interaction: JS-powered accordion toggle for each role's details. Justification: More engaging than a static list; prevents information overload by hiding details until requested.
         - Report Info: Technical skills list. Goal: Compare & Inform. Viz/Method: Categorized lists and a Chart.js Bar Chart. Interaction: Hover tooltips on the chart. Justification: The bar chart offers a quick visual summary of his core competencies, which is faster to parse than reading a list.
         - Report Info: Detailed project descriptions from his experience. Goal: Organize & Detail. Viz/Method: Tabbed content panes. Interaction: JS-powered tab switching. Justification: Allows for in-depth case studies without cluttering the page, enabling users to focus on one project at a time.
@@ -22,6 +22,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
         html {
             height: 100%;
@@ -33,8 +34,6 @@
             background-color: #18181b; /* Zinc 900 */
             color: #f4f4f5; /* Zinc 100 */
             position: relative; /* Needed for fixed canvas to position correctly */
-            /* Removed min-height: 100vh; */
-            /* Removed overflow-x: hidden; to enable mobile scrolling */
         }
         .chart-container {
             position: relative;
@@ -137,6 +136,35 @@
             z-index: 1;
         }
     </style>
+    <style>
+    /* Enhanced reveal-on-scroll */
+    .reveal-on-scroll {
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+        transition: all 0.8s ease-out;
+    }
+    .reveal-on-scroll.revealed {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    /* Enhanced card hover */
+    .glass-effect,
+    .glass-effect-alt,
+    .glass-effect-alt-sky,
+    .glass-effect-alt-amber,
+    .glass-effect-alt-rose {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .glass-effect:hover,
+    .glass-effect-alt:hover,
+    .glass-effect-alt-sky:hover,
+    .glass-effect-alt-amber:hover,
+    .glass-effect-alt-rose:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    }
+    </style>
+
 </head>
 <body class="antialiased">
     <canvas id="background-3d-canvas"></canvas> <!-- Full background 3D canvas -->
@@ -219,19 +247,19 @@
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center">
                 <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt">
-                    <p class="text-4xl font-extrabold text-teal-100">94%</p>
+                    <p class="text-4xl font-extrabold text-teal-100"><span class="achievement-value" data-target="94">0</span>%</p>
                     <p class="mt-2 text-sm font-medium text-teal-200">Latency Reduction</p>
                 </div>
                 <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-sky">
-                    <p class="text-4xl font-extrabold text-sky-100">30%</p>
+                    <p class="text-4xl font-extrabold text-sky-100"><span class="achievement-value" data-target="30">0</span>%</p>
                     <p class="mt-2 text-sm font-medium text-sky-200">ETL Time Saved</p>
                 </div>
                 <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-amber">
-                    <p class="text-4xl font-extrabold text-amber-100">$43k+</p>
+                    <p class="text-4xl font-extrabold text-amber-100">$<span class="achievement-value" data-target="43">0</span>k+</p>
                     <p class="mt-2 text-sm font-medium text-amber-200">Annual Cost Savings</p>
                 </div>
                 <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-rose">
-                    <p class="text-4xl font-extrabold text-rose-100">10TB+</p>
+                    <p class="text-4xl font-extrabold text-rose-100"><span class="achievement-value" data-target="10">0</span>TB+</p>
                     <p class="mt-2 text-sm font-medium text-rose-200">Data Migrated</p>
                 </div>
             </div>
@@ -715,12 +743,38 @@
                 });
             }
 
+            // Function to animate numbers
+            function animateNumber(element, target, duration) {
+                let start = 0;
+                const startTime = performance.now();
+
+                function updateNumber(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const value = Math.floor(progress * target);
+                    element.textContent = value;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(updateNumber);
+                    }
+                }
+                requestAnimationFrame(updateNumber);
+            }
+
             function handleScrollReveal() {
                 const revealElements = document.querySelectorAll('.reveal-on-scroll');
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
                             entry.target.classList.add('revealed');
+                            // Specific animation for achievement numbers
+                            if (entry.target.id === 'achievements') {
+                                const achievementValues = entry.target.querySelectorAll('.achievement-value');
+                                achievementValues.forEach(numElement => {
+                                    const target = parseInt(numElement.dataset.target);
+                                    animateNumber(numElement, target, 1500);
+                                });
+                            }
                             observer.unobserve(entry.target); // Stop observing once revealed
                         }
                     });
