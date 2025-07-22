@@ -129,6 +129,7 @@
             height: 100%;
             z-index: -2; /* Ensure it's behind everything but still visible */
             opacity: 0.05; /* Very subtle background */
+            pointer-events: none; /* Fix 2: Prevents canvas from capturing events */
         }
         /* Main content needs a z-index higher than canvas */
         main {
@@ -506,9 +507,9 @@
             function handleExperienceToggle() {
                 const triggers = document.querySelectorAll('.timeline-item-trigger');
                 triggers.forEach(trigger => {
-                    trigger.addEventListener('click', () => {
-                        const content = trigger.nextElementSibling;
-                        const arrow = trigger.querySelector('.arrow');
+                    trigger.addEventListener('click', function() { // Use a regular function to access 'this'
+                        const content = this.nextElementSibling; // 'this' refers to the button
+                        const arrow = this.querySelector('.arrow');
                         content.classList.toggle('open');
                         arrow.classList.toggle('rotated');
                     });
@@ -835,7 +836,11 @@
 
             function onDocumentTouchMove3D(event) {
                 if (event.touches.length === 1) {
-                    event.preventDefault(); // Prevent scrolling
+                    // Fix 1: Only prevent default if touch is on the canvas
+                    const isOnCanvas = event.target.id === 'background-3d-canvas';
+                    if (isOnCanvas) {
+                        event.preventDefault();
+                    }
                     mouseX = (event.touches[0].pageX - windowHalfX) * 0.001;
                     mouseY = (event.touches[0].pageY - windowHalfY) * 0.001;
                 }
@@ -870,16 +875,17 @@
             // --- End Three.js 3D Background Setup ---
 
 
+            // This is where the functions are called. Ensure they are called after DOM is ready.
             renderExperience();
             handleExperienceToggle();
             renderSkills();
-            renderCertifications(); // Call the new render function
+            renderCertifications(); 
             renderProjects();
             handleProjectTabs();
             createSkillsChart();
             handleMobileMenu();
             handleNavScroll();
-            handleScrollReveal();
+            handleScrollReveal(); // Keep this to enable reveal animations
         });
     </script>
 </body>
