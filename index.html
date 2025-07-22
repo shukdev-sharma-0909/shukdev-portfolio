@@ -8,12 +8,12 @@
     <!-- Chosen Palette: Dark Calm Neutral -->
     <!-- Application Structure Plan: The SPA is designed as a single-page, top-to-bottom narrative to guide a recruiter through a compelling story of Shukdev's capabilities. It starts with a high-impact Hero section for immediate identity, followed by a scannable dashboard of his key quantifiable Achievements to quickly establish value. An interactive, chronological Experience timeline allows users to explore his career path without being overwhelmed. This is followed by a detailed, categorized Skills section with a bar chart for visual comparison. The core of the site is the interactive Projects section, structured as tabbed case studies to provide depth on his most significant work. The structure concludes with Education/Leadership and a clear Contact CTA. This user flow—from broad impression to deep evidence—is designed to be more persuasive and user-friendly than a simple resume recreation. -->
     <!-- Visualization & Content Choices: 
-        - Report Info: Key quantifiable results (e.g., "30% faster ETL", "94% latency reduction"). Goal: Inform & Impress. Viz/Method: HTML/Tailwind "Stat Cards" with large numbers. Interaction: None. Justification: Provides immediate, high-impact evidence of his value.
+        - Report Info: Key quantifiable results (e.g., "30% faster ETL", "94% latency reduction"). Goal: Inform & Impress. Viz/Method: HTML/Tailwind "Stat Cards" with large numbers. Interaction: Counter animation on scroll. Justification: Provides immediate, high-impact evidence of his value with dynamic reveal.
         - Report Info: Chronological work history. Goal: Organize & Compare. Viz/Method: HTML/CSS vertical timeline. Interaction: JS-powered accordion toggle for each role's details. Justification: More engaging than a static list; prevents information overload by hiding details until requested.
         - Report Info: Technical skills list. Goal: Compare & Inform. Viz/Method: Categorized lists and a Chart.js Bar Chart. Interaction: Hover tooltips on the chart. Justification: The bar chart offers a quick visual summary of his core competencies, which is faster to parse than reading a list.
-        - Report Info: Detailed project descriptions from his experience. Goal: Organize & Detail. Viz/Method: Tabbed content panes. Interaction: JS-powered tab switching. Justification: Allows for in-depth case studies without cluttering the page, enabling users to focus on one project at a time.
+        - Report Info: Detailed project descriptions from his experience. Goal: Organize & Detail. Viz/Method: Tabbed content panes. Interaction: JS-powered tab switching with fade. Justification: Allows for in-depth case studies without cluttering the page, enabling users to focus on one project at a time.
         - 3D Design: Abstract geometric shape in hero section. Goal: Enhance visual appeal & modern feel. Viz/Method: Three.js canvas. Interaction: Subtle animation, mouse interaction for rotation, parallax on scroll, color changing. Justification: Adds a dynamic, high-tech aesthetic without distracting from content.
-        - General Animations: Removed scroll reveal and number counting animations to troubleshoot content visibility.
+        - General Animations: Scroll reveal for all sections, subtle hover effects on cards and buttons, text fade-in, element pop-in. Goal: Enhance visual engagement and polish.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
@@ -83,8 +83,7 @@
         .arrow.rotated {
             transform: rotate(90deg);
         }
-        /* Removed scroll reveal animations */
-        /*
+        /* Re-enabled scroll reveal animations */
         .reveal-on-scroll {
             opacity: 0;
             transform: translateY(20px);
@@ -115,7 +114,7 @@
             opacity: 1;
             transform: translateY(0) scale(1);
         }
-        */
+        
 
         /* Glassmorphism base styles */
         .glass-effect {
@@ -198,7 +197,7 @@
 
     <main class="container mx-auto px-6 py-8 md:py-16">
 
-        <section id="hero" class="min-h-[60vh] flex flex-col justify-center items-start text-left relative overflow-hidden">
+        <section id="hero" class="min-h-[60vh] flex flex-col justify-center items-start text-left reveal-on-scroll relative overflow-hidden">
             <!-- The 3D canvas is now outside this section, covering the whole body -->
             <div class="max-w-3xl relative z-10"> <!-- Ensure content is above 3D canvas -->
                 <h1 class="text-4xl md:text-6xl font-extrabold text-stone-100 leading-tight">
@@ -211,64 +210,64 @@
                     I specialize in designing and deploying robust cloud infrastructure and data pipelines that drive efficiency, cut costs, and deliver measurable performance gains. With a foundation in software engineering and a passion for automation, I transform complex technical challenges into elegant, impactful solutions.
                 </p>
                 <div class="mt-8 flex items-center space-x-4">
-                    <a href="https://www.linkedin.com/in/shukdev-sharma/" target="_blank" class="bg-teal-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-teal-600 transition-colors shadow-lg transform hover:scale-105">
+                    <a href="https://linkedin.com/in/shukdev" target="_blank" class="bg-teal-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-teal-600 transition-colors shadow-lg transform hover:scale-105">
                         Connect on LinkedIn
                     </a>
-                    <a href="https://github.com/Shukdev2471" target="_blank" class="text-stone-300 font-semibold py-3 px-6 rounded-lg hover:bg-stone-800 transition-colors border border-stone-700 transform hover:scale-105">
+                    <a href="https://github.com/shukdev" target="_blank" class="text-stone-300 font-semibold py-3 px-6 rounded-lg hover:bg-stone-800 transition-colors border border-stone-700 transform hover:scale-105">
                         View GitHub
                     </a>
                 </div>
             </div>
         </section>
 
-        <section id="about" class="py-16 md:py-24">
+        <section id="about" class="py-16 md:py-24 reveal-on-scroll">
             <div class="grid md:grid-cols-5 gap-12 items-center">
                 <div class="md:col-span-2">
-                     <div class="bg-stone-800 rounded-lg w-full h-80 md:h-96 flex items-center justify-center shadow-lg glass-effect">
+                     <div class="bg-stone-800 rounded-lg w-full h-80 md:h-96 flex items-center justify-center shadow-lg glass-effect reveal-scale-in">
                          <span class="text-stone-500 text-center p-4">A professional headshot would be displayed here for a personal touch.</span>
                     </div>
                 </div>
                 <div class="md:col-span-3">
-                    <h2 class="text-3xl font-bold text-stone-100 mb-4">About Me</h2>
-                     <p class="text-stone-300 text-lg mb-4">
+                    <h2 class="text-3xl font-bold text-stone-100 mb-4 reveal-slide-up">About Me</h2>
+                     <p class="text-stone-300 text-lg mb-4 reveal-slide-up" style="transition-delay: 0.1s;">
                         From optimizing chipset performance at Intel to engineering terabyte-scale data solutions at Cognizant, my career has been a journey of continuous learning and impact. I'm driven by the challenge of architecting systems that are not just functional, but exceptionally efficient and scalable. My approach combines deep technical knowledge in Python, Java, and AWS with a relentless focus on automation and quantifiable results.
                     </p>
-                    <p class="text-stone-300 text-lg">
+                    <p class="text-stone-300 text-lg reveal-slide-up" style="transition-delay: 0.2s;">
                         Currently pursuing my Master's in Computer Science at Northern Arizona University and serving as a Teaching Assistant, I'm passionate about both building the future of technology and mentoring the next generation of engineers. I believe the most elegant solutions arise from a clear understanding of the problem, collaborative teamwork, and a dedication to engineering excellence.
                     </p>
                 </div>
             </div>
         </section>
 
-        <section id="achievements" class="py-16 md:py-24 rounded-2xl glass-effect">
+        <section id="achievements" class="py-16 md:py-24 rounded-2xl reveal-on-scroll glass-effect">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-stone-100">Key Career Achievements</h2>
-                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto">A snapshot of the value and impact I've delivered in my professional roles.</p>
+                <h2 class="text-3xl font-bold text-stone-100 reveal-slide-up">Key Career Achievements</h2>
+                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style="transition-delay: 0.1s;">A snapshot of the value and impact I've delivered in my professional roles.</p>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center">
-                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt">
-                    <p class="text-4xl font-extrabold text-teal-100">94%</p>
+                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt reveal-scale-in" style="transition-delay: 0.2s;">
+                    <p class="text-4xl font-extrabold text-teal-100"><span class="achievement-value" data-target="94">0</span>%</p>
                     <p class="mt-2 text-sm font-medium text-teal-200">Latency Reduction</p>
                 </div>
-                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-sky">
-                    <p class="text-4xl font-extrabold text-sky-100">30%</p>
+                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-sky reveal-scale-in" style="transition-delay: 0.3s;">
+                    <p class="text-4xl font-extrabold text-sky-100"><span class="achievement-value" data-target="30">0</span>%</p>
                     <p class="mt-2 text-sm font-medium text-sky-200">ETL Time Saved</p>
                 </div>
-                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-amber">
-                    <p class="text-4xl font-extrabold text-amber-100">$43k+</p>
+                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-amber reveal-scale-in" style="transition-delay: 0.4s;">
+                    <p class="text-4xl font-extrabold text-amber-100">$<span class="achievement-value" data-target="43">0</span>k+</p>
                     <p class="mt-2 text-sm font-medium text-amber-200">Annual Cost Savings</p>
                 </div>
-                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-rose">
-                    <p class="text-4xl font-extrabold text-rose-100">10TB+</p>
+                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-rose reveal-scale-in" style="transition-delay: 0.5s;">
+                    <p class="text-4xl font-extrabold text-rose-100"><span class="achievement-value" data-target="10">0</span>TB+</p>
                     <p class="mt-2 text-sm font-medium text-rose-200">Data Migrated</p>
                 </div>
             </div>
         </section>
 
-        <section id="experience" class="py-16 md:py-24">
+        <section id="experience" class="py-16 md:py-24 reveal-on-scroll">
             <div class="text-center mb-16">
-                <h2 class="text-3xl font-bold text-stone-100">Professional Experience</h2>
-                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto">An interactive overview of my career journey, highlighting key roles and responsibilities. Click any role to expand.</p>
+                <h2 class="text-3xl font-bold text-stone-100 reveal-slide-up">Professional Experience</h2>
+                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style="transition-delay: 0.1s;">An interactive overview of my career journey, highlighting key roles and responsibilities. Click any role to expand.</p>
             </div>
             <div class="relative max-w-3xl mx-auto">
                 <div class="absolute left-1/2 -translate-x-1/2 h-full w-0.5 bg-stone-700"></div>
@@ -277,62 +276,62 @@
             </div>
         </section>
         
-        <section id="skills" class="py-16 md:py-24 rounded-2xl glass-effect">
+        <section id="skills" class="py-16 md:py-24 rounded-2xl reveal-on-scroll glass-effect">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-stone-100">Technical Skills</h2>
-                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto">A summary of my technical toolkit, from languages and databases to cloud and DevOps platforms.</p>
+                <h2 class="text-3xl font-bold text-stone-100 reveal-slide-up">Technical Skills</h2>
+                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style="transition-delay: 0.1s;">A summary of my technical toolkit, from languages and databases to cloud and DevOps platforms.</p>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-                <div id="skills-languages"></div>
-                <div id="skills-databases"></div>
-                <div id="skills-cloud"></div>
-                <div id="skills-frameworks"></div>
+                <div id="skills-languages" class="reveal-slide-up" style="transition-delay: 0.2s;"></div>
+                <div id="skills-databases" class="reveal-slide-up" style="transition-delay: 0.3s;"></div>
+                <div id="skills-cloud" class="reveal-slide-up" style="transition-delay: 0.4s;"></div>
+                <div id="skills-frameworks" class="reveal-slide-up" style="transition-delay: 0.5s;"></div>
             </div>
-            <div class="chart-container">
+            <div class="chart-container reveal-fade-in" style="transition-delay: 0.6s;">
                 <canvas id="skillsChart"></canvas>
             </div>
         </section>
 
-        <section id="certifications" class="py-16 md:py-24">
+        <section id="certifications" class="py-16 md:py-24 reveal-on-scroll">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-stone-100">Certifications</h2>
-                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto">My professional certifications demonstrating validated expertise.</p>
+                <h2 class="text-3xl font-bold text-stone-100 reveal-slide-up">Certifications</h2>
+                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style="transition-delay: 0.1s;">My professional certifications demonstrating validated expertise.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto" id="certifications-container">
                 <!-- Certifications will be rendered here by JavaScript -->
             </div>
         </section>
 
-        <section id="projects" class="py-16 md:py-24">
+        <section id="projects" class="py-16 md:py-24 reveal-on-scroll">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-stone-100">Project Case Studies</h2>
-                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto">A deeper look into some of my most impactful work. Select a project to view the details.</p>
+                <h2 class="text-3xl font-bold text-stone-100 reveal-slide-up">Project Case Studies</h2>
+                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style="transition-delay: 0.1s;">A deeper look into some of my most impactful work. Select a project to view the details.</p>
             </div>
             <div>
-                <div id="project-tabs" class="flex flex-wrap justify-center gap-2 mb-8">
+                <div id="project-tabs" class="flex flex-wrap justify-center gap-2 mb-8 reveal-fade-in" style="transition-delay: 0.2s;">
                 </div>
-                <div id="project-content" class="rounded-2xl min-h-[300px] shadow-lg glass-effect">
+                <div id="project-content" class="rounded-2xl min-h-[300px] shadow-lg glass-effect reveal-fade-in" style="transition-delay: 0.3s;">
                 </div>
             </div>
         </section>
 
-        <section id="education" class="py-16 md:py-24">
+        <section id="education" class="py-16 md:py-24 reveal-on-scroll">
              <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-stone-100">Education & Leadership</h2>
-                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto">My academic background and experience in mentoring roles.</p>
+                <h2 class="text-3xl font-bold text-stone-100 reveal-slide-up">Education & Leadership</h2>
+                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style="transition-delay: 0.1s;">My academic background and experience in mentoring roles.</p>
             </div>
              <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                <div class="p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect">
+                <div class="p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect reveal-scale-in" style="transition-delay: 0.2s;">
                     <h3 class="font-bold text-xl text-stone-100">Northern Arizona University</h3>
                     <p class="text-teal-400 font-semibold">Master of Science, Computer Science</p>
                     <p class="text-stone-400 text-sm mt-1">Aug 2024 - Present</p>
                 </div>
-                <div class="p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect">
+                <div class="p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect reveal-scale-in" style="transition-delay: 0.3s;">
                     <h3 class="font-bold text-xl text-stone-100">Chandigarh University</h3>
                     <p class="text-teal-400 font-semibold">Bachelor of Science, Computer Science</p>
                     <p class="text-stone-400 text-sm mt-1">Aug 2018 - May 2022</p>
                 </div>
-                <div class="p-8 rounded-xl shadow-lg md:col-span-2 transform hover:scale-105 transition-transform duration-300 glass-effect">
+                <div class="p-8 rounded-xl shadow-lg md:col-span-2 transform hover:scale-105 transition-transform duration-300 glass-effect reveal-scale-in" style="transition-delay: 0.4s;">
                     <h3 class="font-bold text-xl text-stone-100">Teaching Assistant (Data Structures & Python)</h3>
                     <p class="text-teal-400 font-semibold">Northern Arizona University</p>
                     <p class="text-stone-400 text-sm mt-1">Spring 2025 - Present</p>
@@ -346,12 +345,12 @@
         </section>
 
 
-        <section id="contact" class="py-16 md:py-24 text-center">
-            <h2 class="text-3xl font-bold text-stone-100">Let's Connect</h2>
-            <p class="mt-4 text-lg text-stone-300 max-w-xl mx-auto">
+        <section id="contact" class="py-16 md:py-24 text-center reveal-on-scroll">
+            <h2 class="text-3xl font-bold text-stone-100 reveal-slide-up">Let's Connect</h2>
+            <p class="mt-4 text-lg text-stone-300 max-w-xl mx-auto reveal-slide-up" style="transition-delay: 0.1s;">
                 I'm always open to discussing new opportunities, challenging projects, or just talking tech. Feel free to reach out.
             </p>
-            <div class="mt-8">
+            <div class="mt-8 reveal-slide-up" style="transition-delay: 0.2s;">
                  <a href="mailto:shukdev.nau@gmail.com" class="bg-teal-500 text-white font-bold py-4 px-8 rounded-lg hover:bg-teal-600 transition-colors text-lg shadow-lg transform hover:scale-105">
                     shukdev.nau@gmail.com
                 </a>
@@ -506,7 +505,7 @@
                     const container = document.getElementById('timeline-container');
                     if (!container) { console.error("Element #timeline-container not found."); return; }
                     container.innerHTML = experienceData.map((item, index) => `
-                        <div class="relative timeline-item">
+                        <div class="relative timeline-item reveal-slide-up" style="transition-delay: ${0.2 + index * 0.1}s;">
                             <div class="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-4 h-4 bg-teal-400 rounded-full border-4 border-stone-900"></div>
                             <div class="${index % 2 === 0 ? 'md:ml-auto md:pl-12' : 'md:mr-auto md:pr-12'} md:w-1/2 relative">
                                 <button class="w-full text-left p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 timeline-item-trigger transform hover:scale-[1.02] glass-effect">
@@ -571,7 +570,7 @@
                     const container = document.getElementById('certifications-container');
                     if (!container) { console.error("Element #certifications-container not found."); return; }
                     container.innerHTML = certificationsData.map((cert, index) => `
-                        <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect">
+                        <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect reveal-scale-in" style="transition-delay: ${0.2 + index * 0.1}s;">
                             <h3 class="font-bold text-xl text-stone-100">${cert.name}</h3>
                             <p class="text-teal-400 font-semibold">${cert.issuer}</p>
                             <p class="text-stone-400 text-sm mt-1">${cert.date}</p>
@@ -741,8 +740,7 @@
                 });
             }
 
-            // Removed animateNumber and handleScrollReveal to remove all scroll animations
-            /*
+            // Function to animate numbers
             function animateNumber(element, target, duration) {
                 let start = 0;
                 const startTime = performance.now();
@@ -783,7 +781,6 @@
                     observer.observe(element);
                 });
             }
-            */
 
             // Header shrink/expand on scroll
             let lastScrollY = window.scrollY;
@@ -954,8 +951,8 @@
             console.log("handleMobileMenu called.");
             handleNavScroll();
             console.log("handleNavScroll called.");
-            // Removed handleScrollReveal();
-            console.log("handleScrollReveal removed for troubleshooting.");
+            handleScrollReveal(); // Re-enabled handleScrollReveal()
+            console.log("handleScrollReveal re-enabled.");
 
             // Initialize and animate 3D scene after all content is rendered
             init3D();
