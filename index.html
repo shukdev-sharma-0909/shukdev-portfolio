@@ -1,965 +1,916 @@
-<!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shukdev Sharma | Cloud & Data Engineer</title>
-    
-    <!-- Chosen Palette: Dark Calm Neutral -->
-    <!-- Application Structure Plan: The SPA is designed as a single-page, top-to-bottom narrative to guide a recruiter through a compelling story of Shukdev's capabilities. It starts with a high-impact Hero section for immediate identity, followed by a scannable dashboard of his key quantifiable Achievements to quickly establish value. An interactive, chronological Experience timeline allows users to explore his career path without being overwhelmed. This is followed by a detailed, categorized Skills section with a bar chart for visual comparison. The core of the site is the interactive Projects section, structured as tabbed case studies to provide depth on his most significant work. The structure concludes with Education/Leadership and a clear Contact CTA. This user flow—from broad impression to deep evidence—is designed to be more persuasive and user-friendly than a simple resume recreation. -->
-    <!-- Visualization & Content Choices: 
-        - Report Info: Key quantifiable results (e.g., "30% faster ETL", "94% latency reduction"). Goal: Inform & Impress. Viz/Method: HTML/Tailwind "Stat Cards" with large numbers. Interaction: Counter animation on scroll. Justification: Provides immediate, high-impact evidence of his value with dynamic reveal.
-        - Report Info: Chronological work history. Goal: Organize & Compare. Viz/Method: HTML/CSS vertical timeline. Interaction: JS-powered accordion toggle for each role's details. Justification: More engaging than a static list; prevents information overload by hiding details until requested.
-        - Report Info: Technical skills list. Goal: Compare & Inform. Viz/Method: Categorized lists and a Chart.js Bar Chart. Interaction: Hover tooltips on the chart. Justification: The bar chart offers a quick visual summary of his core competencies, which is faster to parse than reading a list.
-        - Report Info: Detailed project descriptions from his experience. Goal: Organize & Detail. Viz/Method: Tabbed content panes. Interaction: JS-powered tab switching with fade. Justification: Allows for in-depth case studies without cluttering the page, enabling users to focus on one project at a time.
-        - 3D Design: Abstract geometric shape in hero section. Goal: Enhance visual appeal & modern feel. Viz/Method: Three.js canvas. Interaction: Subtle animation, mouse interaction for rotation, parallax on scroll, color changing. Justification: Adds a dynamic, high-tech aesthetic without distracting from content.
-        - General Animations: Scroll reveal for all sections, subtle hover effects on cards and buttons, text fade-in, element pop-in. Goal: Enhance visual engagement and polish.
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import Chart from 'chart.js/auto';
+import * as THREE from 'three'; // Corrected import statement
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #18181b; /* Zinc 900 */
-            color: #f4f4f5; /* Zinc 100 */
-            position: relative; /* Needed for fixed canvas to position correctly */
-            min-height: 100vh; /* Ensure body takes full height */
-        }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 350px;
-            max-height: 400px;
-            background-color: rgba(41, 41, 41, 0.7); /* Dark background for chart area with transparency */
-            border-radius: 0.75rem; /* rounded-xl */
-            padding: 1.5rem; /* p-6 */
-            backdrop-filter: blur(12px); /* Glassmorphism effect */
-            -webkit-backdrop-filter: blur(12px); /* For Safari */
-            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
-        }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 400px;
-            }
-        }
-        .nav-link.active {
-            color: #2dd4bf; /* Teal 400 */
-            font-weight: 600;
-        }
-        .tab-btn {
-            background-color: rgba(39, 39, 42, 0.5); /* Zinc 800 with transparency for non-active tabs */
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            color: #a1a1aa; /* Zinc 400 */
-        }
-        .tab-btn.active {
-            background-color: #2dd4bf; /* Teal 400 */
-            color: #ffffff;
-            backdrop-filter: blur(0px); /* Remove blur for active tab to make it solid */
-            -webkit-backdrop-filter: blur(0px);
-            border: 1px solid #2dd4bf; /* Solid border for active tab */
-        }
-        .timeline-item-content {
-            transition: all 0.3s ease-in-out;
-            max-height: 0;
-            overflow: hidden;
-        }
-        .timeline-item-content.open {
-            max-height: 1000px; 
-        }
-        .arrow {
-            transition: transform 0.3s ease-in-out;
-        }
-        .arrow.rotated {
-            transform: rotate(90deg);
-        }
-        /* Re-enabled scroll reveal animations */
-        .reveal-on-scroll {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-        .reveal-on-scroll.revealed {
-            opacity: 1;
-            transform: translateY(0);
-        }
+// Data for the portfolio sections
+const experienceData = [
+    {
+        role: "Cloud Data Engineer",
+        company: "Cognizant",
+        date: "Jun 2022 - Aug 2024",
+        details: [
+            "Developed 10+ scalable interfaces (Python, AWS, REST APIs), achieving 100% automation and saving 200+ hours/year.",
+            "Enhanced ETL pipelines (Talend, Snowflake, AWS), reducing processing time by 30%. Migrated 10TB+ SQL Server data to Snowflake, enabling 4x faster queries.",
+            "Designed and deployed a serverless data pipeline (AWS Lambda, Glue, Kinesis) processing 10K+ events/sec with <500ms latency, improving performance by 25% and cutting costs by $18K/year.",
+            "Optimized cloud infrastructure, cutting costs by 25% ($25K/year) through rightsizing 50+ EC2 instances and auto-scaling workloads, maintaining 99.9% uptime."
+        ]
+    },
+    {
+        role: "Software Engineer Intern",
+        company: "Cognizant",
+        date: "Jan 2022 - Jun 2022",
+        details: [
+            "Refactored a legacy Java application with Redis caching, reducing latency by 94% (from 2.1s to 0.12s) and code complexity by 40%.",
+            "Built a query builder (Spring Boot, Angular) for 10M+ MongoDB tables, optimizing Spark orchestration to cut query latency by 72% (from 14s to 4s).",
+            "Consolidated 150+ REST APIs into a single event-driven pipeline, halving deployment cycles and scaling throughput to 5,000 transactions/sec."
+        ]
+    },
+    {
+        role: "Performance Engineer Intern",
+        company: "Intel Corporation",
+        date: "May 2021 - Aug 2021",
+        details: [
+            "Executed 50+ performance test scenarios for Chromebook chipsets using Sysbench and Geekbench.",
+            "Identified and analyzed performance bottlenecks, improving CPU and memory efficiency by 15% with profiling tools like Perf and VTune.",
+            "Collaborated with cross-functional teams on debugging, contributing to a 10% reduction in power consumption."
+        ]
+    }
+];
 
-        .reveal-fade-in {
-            opacity: 0;
-            transition: opacity 0.8s ease-in;
-        }
-        .reveal-slide-up {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-        }
-        .reveal-scale-in {
-            opacity: 0;
-            transform: scale(0.9);
-            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-        }
-        .revealed.reveal-fade-in,
-        .revealed.reveal-slide-up,
-        .revealed.reveal-scale-in {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-        
+const skillsData = {
+    languages: {
+        title: "Languages",
+        icon: "💻",
+        items: ["Python", "Java", "SQL", "JavaScript", "HTML/CSS", "C/C++", "GraphQL"]
+    },
+    databases: {
+        title: "Databases",
+        icon: "🗃️",
+        items: ["Snowflake", "Microsoft SQL Server", "MongoDB", "MYSQL", "Oracle"]
+    },
+    cloud: {
+        title: "Cloud & DevOps",
+        icon: "☁️",
+        items: ["AWS", "Azure", "CI/CD", "Docker", "Kubernetes", "Terraform", "Git/Github"]
+    },
+    frameworks: {
+        title: "Technologies & Frameworks",
+        icon: "🛠️",
+        items: ["Spring Boot", "Angular", "Linux", "Jenkins", "JUnit", "TensorFlow"]
+    }
+};
 
-        /* Glassmorphism base styles */
-        .glass-effect {
-            background-color: rgba(39, 39, 42, 0.7); /* Zinc 800 with increased transparency */
-            backdrop-filter: blur(12px); /* Increased blur */
-            -webkit-backdrop-filter: blur(12px); /* For Safari */
-            border: 1px solid rgba(255, 255, 255, 0.15); /* Slightly more prominent border */
-        }
-        .glass-effect-alt {
-             background-color: rgba(20, 184, 166, 0.3); /* Teal 500 with transparency */
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .glass-effect-alt-sky {
-             background-color: rgba(14, 165, 233, 0.3); /* Sky 500 with transparency */
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .glass-effect-alt-amber {
-             background-color: rgba(245, 158, 11, 0.3); /* Amber 500 with transparency */
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .glass-effect-alt-rose {
-             background-color: rgba(225, 29, 72, 0.3); /* Rose 500 with transparency */
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+const certificationsData = [
+    {
+        name: "AWS Certified Solutions Architect – Associate",
+        issuer: "Amazon Web Services",
+        date: "Issued: [Date, if known]",
+        link: "#" // Replace with actual certification link if available
+    },
+    {
+        name: "Azure Fundamentals (AZ-900)",
+        issuer: "Microsoft Azure",
+        date: "Issued: [Date, if known]",
+        link: "#" // Replace with actual certification link if available
+    },
+    {
+        name: "Blockchain Developer Training",
+        issuer: "Simplilearn SkillUP",
+        date: "Issued: 19th July 2025",
+        link: "https://simpli-web.app.link/e/R9lB3NCo8Ub" // Actual link from provided PDF
+    }
+];
 
-        /* 3D Canvas specific styles for full background */
-        #background-3d-canvas {
-            position: fixed; /* Fixed to viewport */
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2; /* Ensure it's behind everything but still visible */
-            opacity: 0.05; /* Very subtle background */
-        }
-        /* Main content needs a z-index higher than canvas */
-        main {
-            position: relative;
-            z-index: 1;
-        }
-    </style>
-</head>
-<body class="antialiased">
-    <canvas id="background-3d-canvas"></canvas> <!-- Full background 3D canvas -->
+const projectsData = [
+    {
+        id: 'serverless',
+        title: 'Serverless Data Pipeline',
+        content: `
+            <h4 class="font-bold text-xl mb-2 text-stone-100">Objective</h4>
+            <p class="text-stone-300 mb-4">Design and deploy a real-time, high-throughput, serverless data synchronization pipeline to replace a costly and slow legacy system.</p>
+            <h4 class="font-bold text-xl mb-2 text-stone-100">My Role & Solution</h4>
+            <p class="text-stone-300 mb-4">As the lead engineer, I architected a solution using AWS Lambda, Kinesis, and Glue. This pipeline ingested, transformed, and loaded data in real-time. I wrote the core processing logic in Python, configured the event stream with Kinesis, and set up automated ETL jobs with Glue.</p>
+            <h4 class="font-bold text-xl mb-2 text-stone-100">Key Outcomes</h4>
+            <ul class="list-disc list-inside text-stone-300 space-y-2">
+                <li>Processed over <strong>10,000 events/second</strong> with less than <strong>500ms latency</strong>.</li>
+                <li>Improved overall system performance by <strong>25%</strong>.</li>
+                <li>Reduced annual operational costs by <strong>$18,000</strong>.</li>
+            </ul>
+             <p class="mt-4 text-sm text-stone-400"><strong>Technologies:</strong> AWS Lambda, AWS Glue, AWS Kinesis, Python, Snowflake</p>
+        `
+    },
+    {
+        id: 'migration',
+        title: 'Cloud Data Migration',
+        content: `
+            <h4 class="font-bold text-xl mb-2 text-stone-100">Objective</h4>
+            <p class="text-stone-300 mb-4">Migrate over 10TB of critical business data from on-premise Microsoft SQL Server to the cloud-native Snowflake data warehouse to improve query performance and data ingestion speed.</p>
+            <h4 class="font-bold text-xl mb-2 text-stone-100">My Role & Solution</h4>
+            <p class="text-stone-300 mb-4">I led the migration process, which involved enhancing existing ETL pipelines using Talend and custom Python scripts. I designed the schema in Snowflake, managed the data transfer process ensuring data integrity, and optimized the new pipelines for Snowflake's architecture.</p>
+            <h4 class="font-bold text-xl mb-2 text-stone-100">Key Outcomes</h4>
+            <ul class="list-disc list-inside text-stone-300 space-y-2">
+                <li>Enabled <strong>4x faster queries</strong> for business intelligence dashboards.</li>
+                <li>Achieved <strong>90% faster data ingestion</strong> compared to the old system.</li>
+                <li>Completed the migration with <strong>zero downtime</strong> for production systems.</li>
+            </ul>
+            <p class="mt-4 text-sm text-stone-400"><strong>Technologies:</strong> Snowflake, MS SQL Server, Talend, AWS, Python</p>
+        `
+    },
+    {
+        id: 'refactor',
+        title: 'Legacy App Refactoring',
+        content: `
+            <h4 class="font-bold text-xl mb-2 text-stone-100">Objective</h4>
+            <p class="text-stone-300 mb-4">Modernize a monolithic legacy Java application to improve performance, reduce code complexity, and decrease debugging time.</p>
+            <h4 class="font-bold text-xl mb-2 text-stone-100">My Role & Solution</h4>
+            <p class="text-stone-300 mb-4">I took charge of refactoring the core file I/O modules and integrating a Redis cache for frequently accessed data. This involved modularizing the codebase, writing new unit tests with JUnit, and implementing the caching logic to minimize database hits.</p>
+            <h4 class="font-bold text-xl mb-2 text-stone-100">Key Outcomes</h4>
+            <ul class="list-disc list-inside text-stone-300 space-y-2">
+                <li>Slashed application latency by <strong>94%</strong> (from 2.1s to 0.12s).</li>
+                <li>Reduced code complexity by <strong>40%</strong>, as measured by SonarQube.</li>
+                <li>Cut average debugging time by <strong>30%</strong> due to improved readability.</li>
+            </ul>
+            <p class="mt-4 text-sm text-stone-400"><strong>Technologies:</strong> Java, Spring Boot, Redis, JUnit, SonarQube</p>
+        `
+    }
+];
 
-    <header id="header" class="bg-stone-900/60 backdrop-blur-md sticky top-0 z-50 transition-all duration-300 py-4 md:py-6">
-        <nav class="container mx-auto px-6 flex justify-between items-center">
-            <a href="#" class="text-xl font-bold text-stone-100">Shukdev Sharma</a>
-            <div class="hidden md:flex items-center space-x-8">
-                <a href="#about" class="nav-link text-stone-300 hover:text-teal-400 transition-colors">About</a>
-                <a href="#experience" class="nav-link text-stone-300 hover:text-teal-400 transition-colors">Experience</a>
-                <a href="#skills" class="nav-link text-stone-300 hover:text-teal-400 transition-colors">Skills</a>
-                <a href="#certifications" class="nav-link text-stone-300 hover:text-teal-400 transition-colors">Certifications</a>
-                <a href="#projects" class="nav-link text-stone-300 hover:text-teal-400 transition-colors">Projects</a>
-                <a href="#contact" class="nav-link text-stone-300 hover:text-teal-400 transition-colors">Contact</a>
-            </div>
-             <div class="md:hidden">
-                <button id="mobile-menu-button" class="text-stone-100 focus:outline-none">
-                    <span class="text-2xl">☰</span>
-                </button>
-            </div>
-        </nav>
-        <div id="mobile-menu" class="hidden md:hidden bg-stone-900/80 backdrop-blur-md">
-            <a href="#about" class="block py-2 px-6 text-stone-300 hover:bg-stone-800">About</a>
-            <a href="#experience" class="block py-2 px-6 text-stone-300 hover:bg-stone-800">Experience</a>
-            <a href="#skills" class="block py-2 px-6 text-stone-300 hover:bg-stone-800">Skills</a>
-            <a href="#certifications" class="block py-2 px-6 text-stone-300 hover:bg-stone-800">Certifications</a>
-            <a href="#projects" class="block py-2 px-6 text-stone-300 hover:bg-stone-800">Projects</a>
-            <a href="#contact" class="block py-2 px-6 text-stone-300 hover:bg-stone-800">Contact</a>
-        </div>
-    </header>
+// Main App Component
+const App = () => {
+    // State for mobile menu visibility
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    // State for active project tab
+    const [activeProjectTab, setActiveProjectTab] = useState(projectsData[0].id);
+    // State for expanded timeline items
+    const [expandedTimelineItems, setExpandedTimelineItems] = useState({});
 
-    <main class="container mx-auto px-6 py-8 md:py-16">
+    // Refs for sections to observe for scroll reveal and navigation
+    const sectionRefs = useRef({});
+    // Ref for the 3D canvas
+    const threeDCanvasRef = useRef(null);
+    // Ref for the Chart.js instance
+    const chartRef = useRef(null);
 
-        <section id="hero" class="min-h-[60vh] flex flex-col justify-center items-start text-left reveal-on-scroll relative overflow-hidden">
-            <!-- The 3D canvas is now outside this section, covering the whole body -->
-            <div class="max-w-3xl relative z-10"> <!-- Ensure content is above 3D canvas -->
-                <h1 class="text-4xl md:text-6xl font-extrabold text-stone-100 leading-tight">
-                    Shukdev Sharma
-                </h1>
-                <p class="mt-4 text-xl md:text-2xl text-teal-400 font-semibold">
-                    Cloud & Data Engineer | Building Scalable, High-Performance Systems
-                </p>
-                <p class="mt-6 text-lg text-stone-300">
-                    I specialize in designing and deploying robust cloud infrastructure and data pipelines that drive efficiency, cut costs, and deliver measurable performance gains. With a foundation in software engineering and a passion for automation, I transform complex technical challenges into elegant, impactful solutions.
-                </p>
-                <div class="mt-8 flex items-center space-x-4">
-                    <a href="https://linkedin.com/in/shukdev" target="_blank" class="bg-teal-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-teal-600 transition-colors shadow-lg transform hover:scale-105">
-                        Connect on LinkedIn
-                    </a>
-                    <a href="https://github.com/shukdev" target="_blank" class="text-stone-300 font-semibold py-3 px-6 rounded-lg hover:bg-stone-800 transition-colors border border-stone-700 transform hover:scale-105">
-                        View GitHub
-                    </a>
-                </div>
-            </div>
-        </section>
+    // Function to toggle mobile menu
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
 
-        <section id="about" class="py-16 md:py-24 reveal-on-scroll">
-            <div class="grid md:grid-cols-5 gap-12 items-center">
-                <div class="md:col-span-2">
-                     <div class="bg-stone-800 rounded-lg w-full h-80 md:h-96 flex items-center justify-center shadow-lg glass-effect reveal-scale-in">
-                         <span class="text-stone-500 text-center p-4">A professional headshot would be displayed here for a personal touch.</span>
-                    </div>
-                </div>
-                <div class="md:col-span-3">
-                    <h2 class="text-3xl font-bold text-stone-100 mb-4 reveal-slide-up">About Me</h2>
-                     <p class="text-stone-300 text-lg mb-4 reveal-slide-up" style="transition-delay: 0.1s;">
-                        From optimizing chipset performance at Intel to engineering terabyte-scale data solutions at Cognizant, my career has been a journey of continuous learning and impact. I'm driven by the challenge of architecting systems that are not just functional, but exceptionally efficient and scalable. My approach combines deep technical knowledge in Python, Java, and AWS with a relentless focus on automation and quantifiable results.
-                    </p>
-                    <p class="text-stone-300 text-lg reveal-slide-up" style="transition-delay: 0.2s;">
-                        Currently pursuing my Master's in Computer Science at Northern Arizona University and serving as a Teaching Assistant, I'm passionate about both building the future of technology and mentoring the next generation of engineers. I believe the most elegant solutions arise from a clear understanding of the problem, collaborative teamwork, and a dedication to engineering excellence.
-                    </p>
-                </div>
-            </div>
-        </section>
+    // Function to handle timeline item expansion
+    const toggleTimelineItem = (index) => {
+        setExpandedTimelineItems(prevState => ({
+            ...prevState,
+            [index]: !prevState[index]
+        }));
+    };
 
-        <section id="achievements" class="py-16 md:py-24 rounded-2xl reveal-on-scroll glass-effect">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-stone-100 reveal-slide-up">Key Career Achievements</h2>
-                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style="transition-delay: 0.1s;">A snapshot of the value and impact I've delivered in my professional roles.</p>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center">
-                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt reveal-scale-in" style="transition-delay: 0.2s;">
-                    <p class="text-4xl font-extrabold text-teal-100"><span class="achievement-value" data-target="94">0</span>%</p>
-                    <p class="mt-2 text-sm font-medium text-teal-200">Latency Reduction</p>
-                </div>
-                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-sky reveal-scale-in" style="transition-delay: 0.3s;">
-                    <p class="text-4xl font-extrabold text-sky-100"><span class="achievement-value" data-target="30">0</span>%</p>
-                    <p class="mt-2 text-sm font-medium text-sky-200">ETL Time Saved</p>
-                </div>
-                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-amber reveal-scale-in" style="transition-delay: 0.4s;">
-                    <p class="text-4xl font-extrabold text-amber-100">$<span class="achievement-value" data-target="43">0</span>k+</p>
-                    <p class="mt-2 text-sm font-medium text-amber-200">Annual Cost Savings</p>
-                </div>
-                <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-rose reveal-scale-in" style="transition-delay: 0.5s;">
-                    <p class="text-4xl font-extrabold text-rose-100"><span class="achievement-value" data-target="10">0</span>TB+</p>
-                    <p class="mt-2 text-sm font-medium text-rose-200">Data Migrated</p>
-                </div>
-            </div>
-        </section>
+    // Function to animate numbers (for achievements)
+    const animateNumber = useCallback((element, target, duration) => {
+        let start = 0;
+        const startTime = performance.now();
 
-        <section id="experience" class="py-16 md:py-24 reveal-on-scroll">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-bold text-stone-100 reveal-slide-up">Professional Experience</h2>
-                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style="transition-delay: 0.1s;">An interactive overview of my career journey, highlighting key roles and responsibilities. Click any role to expand.</p>
-            </div>
-            <div class="relative max-w-3xl mx-auto">
-                <div class="absolute left-1/2 -translate-x-1/2 h-full w-0.5 bg-stone-700"></div>
-                <div id="timeline-container" class="space-y-12">
-                </div>
-            </div>
-        </section>
-        
-        <section id="skills" class="py-16 md:py-24 rounded-2xl reveal-on-scroll glass-effect">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-stone-100 reveal-slide-up">Technical Skills</h2>
-                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style="transition-delay: 0.1s;">A summary of my technical toolkit, from languages and databases to cloud and DevOps platforms.</p>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-                <div id="skills-languages" class="reveal-slide-up" style="transition-delay: 0.2s;"></div>
-                <div id="skills-databases" class="reveal-slide-up" style="transition-delay: 0.3s;"></div>
-                <div id="skills-cloud" class="reveal-slide-up" style="transition-delay: 0.4s;"></div>
-                <div id="skills-frameworks" class="reveal-slide-up" style="transition-delay: 0.5s;"></div>
-            </div>
-            <div class="chart-container reveal-fade-in" style="transition-delay: 0.6s;">
-                <canvas id="skillsChart"></canvas>
-            </div>
-        </section>
+        const updateNumber = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const value = Math.floor(progress * target);
+            element.textContent = value;
 
-        <section id="certifications" class="py-16 md:py-24 reveal-on-scroll">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-stone-100 reveal-slide-up">Certifications</h2>
-                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style="transition-delay: 0.1s;">My professional certifications demonstrating validated expertise.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto" id="certifications-container">
-                <!-- Certifications will be rendered here by JavaScript -->
-            </div>
-        </section>
-
-        <section id="projects" class="py-16 md:py-24 reveal-on-scroll">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-stone-100 reveal-slide-up">Project Case Studies</h2>
-                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style="transition-delay: 0.1s;">A deeper look into some of my most impactful work. Select a project to view the details.</p>
-            </div>
-            <div>
-                <div id="project-tabs" class="flex flex-wrap justify-center gap-2 mb-8 reveal-fade-in" style="transition-delay: 0.2s;">
-                </div>
-                <div id="project-content" class="rounded-2xl min-h-[300px] shadow-lg glass-effect reveal-fade-in" style="transition-delay: 0.3s;">
-                </div>
-            </div>
-        </section>
-
-        <section id="education" class="py-16 md:py-24 reveal-on-scroll">
-             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-stone-100 reveal-slide-up">Education & Leadership</h2>
-                <p class="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style="transition-delay: 0.1s;">My academic background and experience in mentoring roles.</p>
-            </div>
-             <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                <div class="p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect reveal-scale-in" style="transition-delay: 0.2s;">
-                    <h3 class="font-bold text-xl text-stone-100">Northern Arizona University</h3>
-                    <p class="text-teal-400 font-semibold">Master of Science, Computer Science</p>
-                    <p class="text-stone-400 text-sm mt-1">Aug 2024 - Present</p>
-                </div>
-                <div class="p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect reveal-scale-in" style="transition-delay: 0.3s;">
-                    <h3 class="font-bold text-xl text-stone-100">Chandigarh University</h3>
-                    <p class="text-teal-400 font-semibold">Bachelor of Science, Computer Science</p>
-                    <p class="text-stone-400 text-sm mt-1">Aug 2018 - May 2022</p>
-                </div>
-                <div class="p-8 rounded-xl shadow-lg md:col-span-2 transform hover:scale-105 transition-transform duration-300 glass-effect reveal-scale-in" style="transition-delay: 0.4s;">
-                    <h3 class="font-bold text-xl text-stone-100">Teaching Assistant (Data Structures & Python)</h3>
-                    <p class="text-teal-400 font-semibold">Northern Arizona University</p>
-                    <p class="text-stone-400 text-sm mt-1">Spring 2025 - Present</p>
-                    <ul class="mt-4 space-y-2 list-disc list-inside text-stone-300">
-                        <li>Assisting students in understanding complex algorithms and data structures.</li>
-                        <li>Providing one-on-one mentorship and debugging assistance to improve problem-solving skills.</li>
-                        <li>Grading assignments and evaluating coding projects for best practices and efficiency.</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-
-        <section id="contact" class="py-16 md:py-24 text-center reveal-on-scroll">
-            <h2 class="text-3xl font-bold text-stone-100 reveal-slide-up">Let's Connect</h2>
-            <p class="mt-4 text-lg text-stone-300 max-w-xl mx-auto reveal-slide-up" style="transition-delay: 0.1s;">
-                I'm always open to discussing new opportunities, challenging projects, or just talking tech. Feel free to reach out.
-            </p>
-            <div class="mt-8 reveal-slide-up" style="transition-delay: 0.2s;">
-                 <a href="mailto:shukdev.nau@gmail.com" class="bg-teal-500 text-white font-bold py-4 px-8 rounded-lg hover:bg-teal-600 transition-colors text-lg shadow-lg transform hover:scale-105">
-                    shukdev.nau@gmail.com
-                </a>
-            </div>
-        </section>
-    </main>
-
-    <footer class="bg-stone-950 text-stone-300 py-6">
-        <div class="container mx-auto px-6 text-center">
-            <p>&copy; 2025 Shukdev Sharma. All Rights Reserved.</p>
-        </div>
-    </footer>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("DOM Content Loaded and script started.");
-            
-            const experienceData = [
-                {
-                    role: "Cloud Data Engineer",
-                    company: "Cognizant",
-                    date: "Jun 2022 - Aug 2024",
-                    details: [
-                        "Developed 10+ scalable interfaces (Python, AWS, REST APIs), achieving 100% automation and saving 200+ hours/year.",
-                        "Enhanced ETL pipelines (Talend, Snowflake, AWS), reducing processing time by 30%. Migrated 10TB+ SQL Server data to Snowflake, enabling 4x faster queries.",
-                        "Designed and deployed a serverless data pipeline (AWS Lambda, Glue, Kinesis) processing 10K+ events/sec with <500ms latency, improving performance by 25% and cutting costs by $18K/year.",
-                        "Optimized cloud infrastructure, cutting costs by 25% ($25K/year) through rightsizing 50+ EC2 instances and auto-scaling workloads, maintaining 99.9% uptime."
-                    ]
-                },
-                {
-                    role: "Software Engineer Intern",
-                    company: "Cognizant",
-                    date: "Jan 2022 - Jun 2022",
-                    details: [
-                        "Refactored a legacy Java application with Redis caching, reducing latency by 94% (from 2.1s to 0.12s) and code complexity by 40%.",
-                        "Built a query builder (Spring Boot, Angular) for 10M+ MongoDB tables, optimizing Spark orchestration to cut query latency by 72% (from 14s to 4s).",
-                        "Consolidated 150+ REST APIs into a single event-driven pipeline, halving deployment cycles and scaling throughput to 5,000 transactions/sec."
-                    ]
-                },
-                {
-                    role: "Performance Engineer Intern",
-                    company: "Intel Corporation",
-                    date: "May 2021 - Aug 2021",
-                    details: [
-                        "Executed 50+ performance test scenarios for Chromebook chipsets using Sysbench and Geekbench.",
-                        "Identified and analyzed performance bottlenecks, improving CPU and memory efficiency by 15% with profiling tools like Perf and VTune.",
-                        "Collaborated with cross-functional teams on debugging, contributing to a 10% reduction in power consumption."
-                    ]
-                }
-            ];
-
-            const skillsData = {
-                languages: {
-                    title: "Languages",
-                    icon: "💻",
-                    items: ["Python", "Java", "SQL", "JavaScript", "HTML/CSS", "C/C++", "GraphQL"]
-                },
-                databases: {
-                    title: "Databases",
-                    icon: "🗃️",
-                    items: ["Snowflake", "Microsoft SQL Server", "MongoDB", "MYSQL", "Oracle"]
-                },
-                cloud: {
-                    title: "Cloud & DevOps",
-                    icon: "☁️",
-                    items: ["AWS", "Azure", "CI/CD", "Docker", "Kubernetes", "Terraform", "Git/Github"]
-                },
-                frameworks: {
-                    title: "Technologies & Frameworks",
-                    icon: "🛠️",
-                    items: ["Spring Boot", "Angular", "Linux", "Jenkins", "JUnit", "TensorFlow"]
-                }
-            };
-
-            const certificationsData = [
-                {
-                    name: "AWS Certified Solutions Architect – Associate",
-                    issuer: "Amazon Web Services",
-                    date: "Issued: [Date, if known]",
-                    link: "#" // Replace with actual certification link if available
-                },
-                {
-                    name: "Azure Fundamentals (AZ-900)",
-                    issuer: "Microsoft Azure",
-                    date: "Issued: [Date, if known]",
-                    link: "#" // Replace with actual certification link if available
-                },
-                {
-                    name: "Blockchain Developer Training",
-                    issuer: "Simplilearn SkillUP",
-                    date: "Issued: 19th July 2025",
-                    link: "https://simpli-web.app.link/e/R9lB3NCo8Ub" // Actual link from provided PDF
-                }
-            ];
-            
-            const projectsData = [
-                {
-                    id: 'serverless',
-                    title: 'Serverless Data Pipeline',
-                    content: `
-                        <h4 class="font-bold text-xl mb-2 text-stone-100">Objective</h4>
-                        <p class="text-stone-300 mb-4">Design and deploy a real-time, high-throughput, serverless data synchronization pipeline to replace a costly and slow legacy system.</p>
-                        <h4 class="font-bold text-xl mb-2 text-stone-100">My Role & Solution</h4>
-                        <p class="text-stone-300 mb-4">As the lead engineer, I architected a solution using AWS Lambda, Kinesis, and Glue. This pipeline ingested, transformed, and loaded data in real-time. I wrote the core processing logic in Python, configured the event stream with Kinesis, and set up automated ETL jobs with Glue.</p>
-                        <h4 class="font-bold text-xl mb-2 text-stone-100">Key Outcomes</h4>
-                        <ul class="list-disc list-inside text-stone-300 space-y-2">
-                            <li>Processed over <strong>10,000 events/second</strong> with less than <strong>500ms latency</strong>.</li>
-                            <li>Improved overall system performance by <strong>25%</strong>.</li>
-                            <li>Reduced annual operational costs by <strong>$18,000</strong>.</li>
-                        </ul>
-                         <p class="mt-4 text-sm text-stone-400"><strong>Technologies:</strong> AWS Lambda, AWS Glue, AWS Kinesis, Python, Snowflake</p>
-                    `
-                },
-                {
-                    id: 'migration',
-                    title: 'Cloud Data Migration',
-                    content: `
-                        <h4 class="font-bold text-xl mb-2 text-stone-100">Objective</h4>
-                        <p class="text-stone-300 mb-4">Migrate over 10TB of critical business data from on-premise Microsoft SQL Server to the cloud-native Snowflake data warehouse to improve query performance and data ingestion speed.</p>
-                        <h4 class="font-bold text-xl mb-2 text-stone-100">My Role & Solution</h4>
-                        <p class="text-stone-300 mb-4">I led the migration process, which involved enhancing existing ETL pipelines using Talend and custom Python scripts. I designed the schema in Snowflake, managed the data transfer process ensuring data integrity, and optimized the new pipelines for Snowflake's architecture.</p>
-                        <h4 class="font-bold text-xl mb-2 text-stone-100">Key Outcomes</h4>
-                        <ul class="list-disc list-inside text-stone-300 space-y-2">
-                            <li>Enabled <strong>4x faster queries</strong> for business intelligence dashboards.</li>
-                            <li>Achieved <strong>90% faster data ingestion</strong> compared to the old system.</li>
-                            <li>Completed the migration with <strong>zero downtime</strong> for production systems.</li>
-                        </ul>
-                        <p class="mt-4 text-sm text-stone-400"><strong>Technologies:</strong> Snowflake, MS SQL Server, Talend, AWS, Python</p>
-                    `
-                },
-                 {
-                    id: 'refactor',
-                    title: 'Legacy App Refactoring',
-                    content: `
-                        <h4 class="font-bold text-xl mb-2 text-stone-100">Objective</h4>
-                        <p class="text-stone-300 mb-4">Modernize a monolithic legacy Java application to improve performance, reduce code complexity, and decrease debugging time.</p>
-                        <h4 class="font-bold text-xl mb-2 text-stone-100">My Role & Solution</h4>
-                        <p class="text-stone-300 mb-4">I took charge of refactoring the core file I/O modules and integrating a Redis cache for frequently accessed data. This involved modularizing the codebase, writing new unit tests with JUnit, and implementing the caching logic to minimize database hits.</p>
-                        <h4 class="font-bold text-xl mb-2 text-stone-100">Key Outcomes</h4>
-                        <ul class="list-disc list-inside text-stone-300 space-y-2">
-                            <li>Slashed application latency by <strong>94%</strong> (from 2.1s to 0.12s).</li>
-                            <li>Reduced code complexity by <strong>40%</strong>, as measured by SonarQube.</li>
-                            <li>Cut average debugging time by <strong>30%</strong> due to improved readability.</li>
-                        </ul>
-                        <p class="mt-4 text-sm text-stone-400"><strong>Technologies:</strong> Java, Spring Boot, Redis, JUnit, SonarQube</p>
-                    `
-                }
-            ];
-
-            function renderExperience() {
-                try {
-                    const container = document.getElementById('timeline-container');
-                    if (!container) { console.error("Element #timeline-container not found."); return; }
-                    container.innerHTML = experienceData.map((item, index) => `
-                        <div class="relative timeline-item reveal-slide-up" style="transition-delay: ${0.2 + index * 0.1}s;">
-                            <div class="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-4 h-4 bg-teal-400 rounded-full border-4 border-stone-900"></div>
-                            <div class="${index % 2 === 0 ? 'md:ml-auto md:pl-12' : 'md:mr-auto md:pr-12'} md:w-1/2 relative">
-                                <button class="w-full text-left p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 timeline-item-trigger transform hover:scale-[1.02] glass-effect">
-                                    <div class="flex justify-between items-center">
-                                        <div>
-                                            <p class="text-xs text-stone-400">${item.date}</p>
-                                            <h3 class="font-bold text-xl text-stone-100 mt-1">${item.role}</h3>
-                                            <p class="font-semibold text-teal-400">${item.company}</p>
-                                        </div>
-                                        <span class="arrow text-teal-400 text-2xl font-bold">&#x25B8;</span>
-                                    </div>
-                                </button>
-                                <div class="timeline-item-content mt-4 p-6 rounded-xl shadow-inner glass-effect">
-                                    <ul class="space-y-2 list-disc list-inside text-stone-300">
-                                        ${item.details.map(detail => `<li>${detail}</li>`).join('')}
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('');
-                } catch (error) {
-                    console.error("Error rendering experience:", error);
-                }
-            }
-            
-            function handleExperienceToggle() {
-                const triggers = document.querySelectorAll('.timeline-item-trigger');
-                triggers.forEach(trigger => {
-                    trigger.addEventListener('click', () => {
-                        const content = trigger.nextElementSibling;
-                        const arrow = trigger.querySelector('.arrow');
-                        content.classList.toggle('open');
-                        arrow.classList.toggle('rotated');
-                    });
-                });
-            }
-            
-            function renderSkills() {
-                try {
-                    Object.keys(skillsData).forEach(key => {
-                        const skill = skillsData[key];
-                        const container = document.getElementById(`skills-${key}`);
-                        if (container) { // Ensure container exists before trying to render
-                            let itemsHtml = skill.items.map(item => `<li class="flex items-center"><span class="bg-teal-700 text-teal-100 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">${item}</span></li>`).join('');
-                            container.innerHTML = `
-                                <h3 class="text-xl font-bold mb-4 flex items-center text-stone-100"><span class="text-2xl mr-3">${skill.icon}</span> ${skill.title}</h3>
-                                <ul class="flex flex-wrap gap-2">
-                                   ${itemsHtml}
-                                </ul>
-                            `;
-                        } else {
-                            console.warn(`Element #skills-${key} not found.`);
-                        }
-                    });
-                } catch (error) {
-                    console.error("Error rendering skills:", error);
-                }
-            }
-
-            function renderCertifications() {
-                try {
-                    const container = document.getElementById('certifications-container');
-                    if (!container) { console.error("Element #certifications-container not found."); return; }
-                    container.innerHTML = certificationsData.map((cert, index) => `
-                        <div class="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect reveal-scale-in" style="transition-delay: ${0.2 + index * 0.1}s;">
-                            <h3 class="font-bold text-xl text-stone-100">${cert.name}</h3>
-                            <p class="text-teal-400 font-semibold">${cert.issuer}</p>
-                            <p class="text-stone-400 text-sm mt-1">${cert.date}</p>
-                            ${cert.link && cert.link !== '#' ? `<a href="${cert.link}" target="_blank" class="text-teal-500 hover:underline text-sm mt-2 block">View Credential</a>` : ''}
-                        </div>
-                    `).join('');
-                } catch (error) {
-                    console.error("Error rendering certifications:", error);
-                }
-            }
-            
-            function renderProjects() {
-                try {
-                    const tabsContainer = document.getElementById('project-tabs');
-                    const contentContainer = document.getElementById('project-content');
-                    if (!tabsContainer) { console.error("Element #project-tabs not found."); return; }
-                    if (!contentContainer) { console.error("Element #project-content not found."); return; }
-
-                    tabsContainer.innerHTML = projectsData.map((project, index) => `
-                        <button class="tab-btn px-4 py-2 rounded-lg font-semibold transition-colors ${index === 0 ? 'active' : ''}" data-id="${project.id}">
-                            ${project.title}
-                        </button>
-                    `).join('');
-                    
-                    contentContainer.innerHTML = projectsData.map((project, index) => `
-                        <div class="project-pane ${index !== 0 ? 'hidden' : ''}" id="${project.id}">
-                            ${project.content}
-                        </div>
-                    `).join('');
-                } catch (error) {
-                    console.error("Error rendering projects:", error);
-                }
-            }
-
-            function handleProjectTabs() {
-                try {
-                    const tabs = document.querySelectorAll('.tab-btn');
-                    const panes = document.querySelectorAll('.project-pane');
-                    
-                    if (tabs.length === 0 || panes.length === 0) {
-                        console.warn("Project tabs or panes not found, skipping tab handling.");
-                        return;
-                    }
-
-                    tabs.forEach(tab => {
-                        tab.addEventListener('click', () => {
-                            tabs.forEach(t => t.classList.remove('active'));
-                            tab.classList.add('active');
-                            
-                            const targetId = tab.dataset.id;
-                            panes.forEach(pane => {
-                                if (pane.id === targetId) {
-                                    pane.classList.remove('hidden');
-                                } else {
-                                    pane.classList.add('hidden');
-                                }
-                            });
-                        });
-                    });
-                    // Trigger initial content display for the first tab
-                    if (tabs.length > 0) {
-                        tabs[0].click(); 
-                    }
-                } catch (error) {
-                    console.error("Error handling project tabs:", error);
-                }
-            }
-
-            function createSkillsChart() {
-                try {
-                    const ctx = document.getElementById('skillsChart').getContext('2d');
-                    if (!ctx) { console.error("Canvas element for skillsChart not found."); return; }
-                    new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Python', 'Java', 'AWS', 'Snowflake', 'SQL', 'Spring Boot', 'Angular'],
-                            datasets: [{
-                                label: 'Proficiency & Experience',
-                                data: [95, 85, 95, 90, 90, 80, 75],
-                                backgroundColor: 'rgba(45, 212, 191, 0.6)', /* Teal 400 with opacity */
-                                borderColor: 'rgba(45, 212, 191, 1)', /* Teal 400 */
-                                borderWidth: 1,
-                                borderRadius: 4,
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            indexAxis: 'y',
-                            scales: {
-                                x: {
-                                    beginAtZero: true,
-                                    max: 100,
-                                    ticks: {
-                                        color: '#a1a1aa' /* Zinc 400 */
-                                    },
-                                    grid: {
-                                        display: false
-                                    }
-                                },
-                                 y: {
-                                    ticks: {
-                                        color: '#a1a1aa' /* Zinc 400 */
-                                    },
-                                    grid: {
-                                        color: '#3f3f46' /* Zinc 700 */
-                                    }
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-                                tooltip: {
-                                    enabled: true,
-                                    backgroundColor: '#27272a', /* Zinc 800 */
-                                    titleFont: { weight: 'bold' },
-                                    bodyFont: { size: 14 },
-                                    titleColor: '#f4f4f5', /* Zinc 100 */
-                                    bodyColor: '#e4e4e7', /* Zinc 200 */
-                                    callbacks: {
-                                        label: function(context) {
-                                            return ` Proficiency: ${context.raw}%`;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                } catch (error) {
-                    console.error("Error creating skills chart:", error);
-                }
-            }
-
-            function handleMobileMenu() {
-                const button = document.getElementById('mobile-menu-button');
-                const menu = document.getElementById('mobile-menu');
-                const links = menu.querySelectorAll('a');
-
-                button.addEventListener('click', () => {
-                    menu.classList.toggle('hidden');
-                });
-                
-                links.forEach(link => {
-                    link.addEventListener('click', () => {
-                         menu.classList.add('hidden');
-                    });
-                })
-            }
-            
-            function handleNavScroll() {
-                const sections = document.querySelectorAll('main section');
-                const navLinks = document.querySelectorAll('.nav-link');
-                
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            navLinks.forEach(link => {
-                                link.classList.toggle('active', link.getAttribute('href').substring(1) === entry.target.id);
-                            });
-                        }
-                    });
-                }, { rootMargin: "-50% 0px -50% 0px" });
-
-                sections.forEach(section => {
-                    observer.observe(section);
-                });
-            }
-
-            // Function to animate numbers
-            function animateNumber(element, target, duration) {
-                let start = 0;
-                const startTime = performance.now();
-
-                function updateNumber(currentTime) {
-                    const elapsed = currentTime - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    const value = Math.floor(progress * target);
-                    element.textContent = value;
-
-                    if (progress < 1) {
-                        requestAnimationFrame(updateNumber);
-                    }
-                }
+            if (progress < 1) {
                 requestAnimationFrame(updateNumber);
             }
+        };
+        requestAnimationFrame(updateNumber);
+    }, []);
 
-            function handleScrollReveal() {
-                const revealElements = document.querySelectorAll('.reveal-on-scroll');
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            entry.target.classList.add('revealed');
-                            // Specific animation for achievement numbers
-                            if (entry.target.id === 'achievements') {
-                                const achievementValues = entry.target.querySelectorAll('.achievement-value');
-                                achievementValues.forEach(numElement => {
-                                    const target = parseInt(numElement.dataset.target);
-                                    animateNumber(numElement, target, 1500);
-                                });
-                            }
-                            observer.unobserve(entry.target); // Stop observing once revealed
-                        }
-                    });
-                }, { threshold: 0.1 }); // Trigger when 10% of the element is visible
-
-                revealElements.forEach(element => {
-                    observer.observe(element);
-                });
-            }
-
-            // Header shrink/expand on scroll
-            let lastScrollY = window.scrollY;
-            const header = document.getElementById('header');
-
-            window.addEventListener('scroll', () => {
-                if (window.scrollY > 0) {
-                    header.classList.remove('py-6');
-                    header.classList.add('py-4', 'shadow-xl');
-                } else {
-                    header.classList.remove('py-4', 'shadow-xl');
-                    header.classList.add('py-6');
+    // Effect for scroll reveal and achievement number animation
+    useEffect(() => {
+        console.log("Setting up IntersectionObserver for scroll reveal.");
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                    // Specific animation for achievement numbers
+                    if (entry.target.id === 'achievements') {
+                        const achievementValues = entry.target.querySelectorAll('.achievement-value');
+                        achievementValues.forEach(numElement => {
+                            const target = parseInt(numElement.dataset.target);
+                            animateNumber(numElement, target, 1500);
+                        });
+                    }
+                    observer.unobserve(entry.target); // Stop observing once revealed
                 }
             });
+        }, { threshold: 0.1 }); // Trigger when 10% of the element is visible
 
-            // --- Three.js 3D Background Setup ---
-            let scene, camera, renderer, objects = []; // Use an array for multiple objects
-            let mouseX = 0, mouseY = 0;
-            let windowHalfX = window.innerWidth / 2;
-            let windowHalfY = window.innerHeight / 2;
-            let canvas; // Declare canvas here to be accessible globally in this scope
-
-            function init3D() {
-                try {
-                    canvas = document.getElementById('background-3d-canvas'); // Get canvas element
-                    if (!canvas) {
-                        console.error("3D Canvas element not found. Skipping 3D initialization.");
-                        return;
-                    }
-
-                    // Scene
-                    scene = new THREE.Scene();
-
-                    // Camera
-                    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                    camera.position.z = 5;
-
-                    // Renderer
-                    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
-                    renderer.setSize(window.innerWidth, window.innerHeight);
-                    renderer.setPixelRatio(window.devicePixelRatio);
-
-                    // Objects
-                    const objectTypes = [
-                        { geometry: new THREE.IcosahedronGeometry(1.5, 0), initialColor: 0x2dd4bf, opacity: 0.8 }, // Teal
-                        { geometry: new THREE.BoxGeometry(1.5, 1.5, 1.5), initialColor: 0x0ea5e9, opacity: 0.7 }, // Sky
-                        { geometry: new THREE.TorusGeometry(1, 0.4, 16, 100), initialColor: 0xf59e0b, opacity: 0.6 }, // Amber
-                        { geometry: new THREE.SphereGeometry(1.2, 32, 32), initialColor: 0xe11d48, opacity: 0.5 }, // Rose
-                        { geometry: new THREE.OctahedronGeometry(1.3, 0), initialColor: 0x8b5cf6, opacity: 0.7 } // Violet
-                    ];
-
-                    objectTypes.forEach((type, index) => {
-                        const material = new THREE.MeshStandardMaterial({
-                            color: type.initialColor,
-                            roughness: 0.5,
-                            metalness: 0.8,
-                            transparent: true,
-                            opacity: type.opacity
-                        });
-                        const obj = new THREE.Mesh(type.geometry, material);
-                        
-                        // Random initial positions
-                        obj.position.x = (Math.random() - 0.5) * 10;
-                        obj.position.y = (Math.random() - 0.5) * 10;
-                        obj.position.z = (Math.random() - 0.5) * 10;
-
-                        scene.add(obj);
-                        objects.push(obj);
-                    });
-
-                    // Lighting
-                    const ambientLight = new THREE.AmbientLight(0x404040, 2); // soft white light
-                    scene.add(ambientLight);
-
-                    const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1);
-                    directionalLight1.position.set(1, 1, 1).normalize();
-                    scene.add(directionalLight1);
-
-                    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
-                    directionalLight2.position.set(-1, -1, -1).normalize();
-                    scene.add(directionalLight2);
-
-
-                    // Event Listeners for responsiveness and mouse interaction
-                    window.addEventListener('resize', onWindowResize3D);
-                    document.addEventListener('mousemove', onDocumentMouseMove3D);
-                    document.addEventListener('touchmove', onDocumentTouchMove3D, { passive: false });
-                } catch (error) {
-                    console.error("Error initializing 3D scene:", error);
-                }
-            }
-
-            function onWindowResize3D() {
-                if (!camera || !renderer) return; // Ensure Three.js is initialized
-                windowHalfX = window.innerWidth / 2;
-                windowHalfY = window.innerHeight / 2;
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            }
-
-            function onDocumentMouseMove3D(event) {
-                mouseX = (event.clientX - windowHalfX) * 0.001;
-                mouseY = (event.clientY - windowHalfY) * 0.001;
-            }
-
-            function onDocumentTouchMove3D(event) {
-                if (event.touches.length === 1) {
-                    event.preventDefault(); // Prevent scrolling
-                    mouseX = (event.touches[0].pageX - windowHalfX) * 0.001;
-                    mouseY = (event.touches[0].pageY - windowHalfY) * 0.001;
-                }
-            }
-
-            function animate3D() {
-                try {
-                    if (!renderer) return; // Ensure renderer is initialized before animating
-                    requestAnimationFrame(animate3D);
-
-                    const time = Date.now() * 0.0001; // Slower time for color change
-                    const scrollFactor = window.scrollY * 0.0001; // Factor based on scroll position
-
-                    objects.forEach((obj, index) => {
-                        // Apply subtle automatic rotation, slightly different for each object
-                        obj.rotation.x += 0.001 + (index * 0.0001);
-                        obj.rotation.y += 0.001 + (index * 0.0001);
-
-                        // Apply mouse/touch rotation, affecting all objects
-                        obj.rotation.x += (mouseY - obj.rotation.x) * 0.005; // Reduced influence
-                        obj.rotation.y += (mouseX - obj.rotation.y) * 0.005; // Reduced influence
-
-                        // Subtle floating/movement
-                        obj.position.y = Math.sin(time + index * 0.5 + scrollFactor) * 0.5; // Affected by scroll
-                        obj.position.x = Math.cos(time + index * 0.5 + scrollFactor) * 0.5; // Affected by scroll
-                        obj.position.z = Math.sin(time * 0.7 + index * 0.3 + scrollFactor) * 0.3; // Slight depth movement
-
-                        // Color change based on time and object index for variation
-                        const hue = (time * 0.1 + index * 0.1) % 1; // Cycle hue from 0 to 1
-                        obj.material.color.setHSL(hue, 0.8, 0.6); // S, L can be adjusted
-                    });
-
-                    renderer.render(scene, camera);
-                } catch (error) {
-                    console.error("Error animating 3D scene:", error);
-                }
-            }
-
-            // --- End Three.js 3D Background Setup ---
-
-
-            // Call rendering and event handling functions
-            // The order of these calls is important for DOM manipulation and event listeners
-            renderExperience();
-            console.log("renderExperience called.");
-            handleExperienceToggle();
-            console.log("handleExperienceToggle called.");
-            renderSkills();
-            console.log("renderSkills called.");
-            renderCertifications(); 
-            console.log("renderCertifications called.");
-            renderProjects();
-            console.log("renderProjects called.");
-            handleProjectTabs();
-            console.log("handleProjectTabs called.");
-            createSkillsChart();
-            console.log("createSkillsChart called.");
-            handleMobileMenu();
-            console.log("handleMobileMenu called.");
-            handleNavScroll();
-            console.log("handleNavScroll called.");
-            handleScrollReveal(); // Re-enabled handleScrollReveal()
-            console.log("handleScrollReveal re-enabled.");
-
-            // Initialize and animate 3D scene after all content is rendered
-            init3D();
-            console.log("init3D called.");
-            animate3D();
-            console.log("animate3D called.");
+        // Apply to all sections that need reveal animation
+        const sections = document.querySelectorAll('.reveal-on-scroll');
+        sections.forEach(section => {
+            observer.observe(section);
         });
-    </script>
-</body>
-</html>
+
+        // Cleanup observer on component unmount
+        return () => {
+            console.log("Cleaning up IntersectionObserver.");
+            sections.forEach(section => {
+                observer.unobserve(section);
+            });
+        };
+    }, [animateNumber]); // Dependency array includes animateNumber
+
+    // Effect for 3D background initialization and animation
+    useEffect(() => {
+        console.log("Initializing 3D background.");
+        let scene, camera, renderer, objects = [];
+        let mouseX = 0, mouseY = 0;
+        let windowHalfX = window.innerWidth / 2;
+        let windowHalfY = window.innerHeight / 2;
+        const canvas = threeDCanvasRef.current;
+
+        if (!canvas) {
+            console.error("3D Canvas element not found. Skipping 3D initialization.");
+            return;
+        }
+
+        // Scene
+        scene = new THREE.Scene();
+
+        // Camera
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        // Renderer
+        renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+
+        // Objects
+        const objectTypes = [
+            { geometry: new THREE.IcosahedronGeometry(1.5, 0), initialColor: 0x2dd4bf, opacity: 0.8 }, // Teal
+            { geometry: new THREE.BoxGeometry(1.5, 1.5, 1.5), initialColor: 0x0ea5e9, opacity: 0.7 }, // Sky
+            { geometry: new THREE.TorusGeometry(1, 0.4, 16, 100), initialColor: 0xf59e0b, opacity: 0.6 }, // Amber
+            { geometry: new THREE.SphereGeometry(1.2, 32, 32), initialColor: 0xe11d48, opacity: 0.5 }, // Rose
+            { geometry: new THREE.OctahedronGeometry(1.3, 0), initialColor: 0x8b5cf6, opacity: 0.7 } // Violet
+        ];
+
+        objectTypes.forEach((type, index) => {
+            const material = new THREE.MeshStandardMaterial({
+                color: type.initialColor,
+                roughness: 0.5,
+                metalness: 0.8,
+                transparent: true,
+                opacity: type.opacity
+            });
+            const obj = new THREE.Mesh(type.geometry, material);
+            
+            // Random initial positions
+            obj.position.x = (Math.random() - 0.5) * 10;
+            obj.position.y = (Math.random() - 0.5) * 10;
+            obj.position.z = (Math.random() - 0.5) * 10;
+
+            scene.add(obj);
+            objects.push(obj);
+        });
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 2); // soft white light
+        scene.add(ambientLight);
+
+        const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight1.position.set(1, 1, 1).normalize();
+        scene.add(directionalLight1);
+
+        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight2.position.set(-1, -1, -1).normalize();
+        scene.add(directionalLight2);
+
+        // Animation loop
+        const animate3D = () => {
+            if (!renderer) return;
+            requestAnimationFrame(animate3D);
+
+            const time = Date.now() * 0.0001;
+            const scrollFactor = window.scrollY * 0.0001;
+
+            objects.forEach((obj, index) => {
+                obj.rotation.x += 0.001 + (index * 0.0001);
+                obj.rotation.y += 0.001 + (index * 0.0001);
+
+                obj.rotation.x += (mouseX - obj.rotation.x) * 0.005;
+                obj.rotation.y += (mouseX - obj.rotation.y) * 0.005;
+
+                obj.position.y = Math.sin(time + index * 0.5 + scrollFactor) * 0.5;
+                obj.position.x = Math.cos(time + index * 0.5 + scrollFactor) * 0.5;
+                obj.position.z = Math.sin(time * 0.7 + index * 0.3 + scrollFactor) * 0.3;
+
+                const hue = (time * 0.1 + index * 0.1) % 1;
+                obj.material.color.setHSL(hue, 0.8, 0.6);
+            });
+
+            renderer.render(scene, camera);
+        };
+
+        // Event handlers for mouse/touch and resize
+        const onWindowResize3D = () => {
+            if (!camera || !renderer) return;
+            windowHalfX = window.innerWidth / 2;
+            windowHalfY = window.innerHeight / 2;
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        };
+
+        const onDocumentMouseMove3D = (event) => {
+            mouseX = (event.clientX - windowHalfX) * 0.001;
+            mouseY = (event.clientY - windowHalfY) * 0.001;
+        };
+
+        const onDocumentTouchMove3D = (event) => {
+            if (event.touches.length === 1) {
+                event.preventDefault();
+                mouseX = (event.touches[0].pageX - windowHalfX) * 0.001;
+                mouseY = (event.touches[0].pageY - windowHalfY) * 0.001;
+            }
+        };
+
+        // Add event listeners
+        window.addEventListener('resize', onWindowResize3D);
+        document.addEventListener('mousemove', onDocumentMouseMove3D);
+        document.addEventListener('touchmove', onDocumentTouchMove3D, { passive: false });
+
+        // Start animation
+        animate3D();
+
+        // Cleanup function
+        return () => {
+            console.log("Cleaning up 3D background.");
+            window.removeEventListener('resize', onWindowResize3D);
+            document.removeEventListener('mousemove', onDocumentMouseMove3D);
+            document.removeEventListener('touchmove', onDocumentTouchMove3D);
+            if (renderer) {
+                renderer.dispose();
+            }
+            // Dispose of geometries and materials to prevent memory leaks
+            objects.forEach(obj => {
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) obj.material.dispose();
+            });
+            scene.clear();
+        };
+    }, []); // Empty dependency array means this runs once on mount and cleans up on unmount
+
+
+    // Effect for Chart.js initialization
+    useEffect(() => {
+        console.log("Initializing Chart.js.");
+        const ctx = document.getElementById('skillsChart');
+        if (!ctx) {
+            console.error("Canvas element for skillsChart not found.");
+            return;
+        }
+
+        if (chartRef.current) {
+            chartRef.current.destroy(); // Destroy existing chart instance before creating a new one
+        }
+
+        chartRef.current = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Python', 'Java', 'AWS', 'Snowflake', 'SQL', 'Spring Boot', 'Angular'],
+                datasets: [{
+                    label: 'Proficiency & Experience',
+                    data: [95, 85, 95, 90, 90, 80, 75],
+                    backgroundColor: 'rgba(45, 212, 191, 0.6)',
+                    borderColor: 'rgba(45, 212, 191, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            color: '#a1a1aa'
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: '#a1a1aa'
+                        },
+                        grid: {
+                            color: '#3f3f46'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: '#27272a',
+                        titleFont: { weight: 'bold' },
+                        bodyFont: { size: 14 },
+                        titleColor: '#f4f4f5',
+                        bodyColor: '#e4e4e7',
+                        callbacks: {
+                            label: function(context) {
+                                return ` Proficiency: ${context.raw}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Cleanup function for Chart.js
+        return () => {
+            console.log("Cleaning up Chart.js.");
+            if (chartRef.current) {
+                chartRef.current.destroy();
+            }
+        };
+    }, []); // Empty dependency array means this runs once on mount and cleans up on unmount
+
+    // Effect for header shrink/expand on scroll
+    useEffect(() => {
+        console.log("Setting up header scroll effect.");
+        const header = document.getElementById('header');
+        if (!header) { console.error("Header element not found."); return; }
+
+        const handleScroll = () => {
+            if (window.scrollY > 0) {
+                header.classList.remove('py-6');
+                header.classList.add('py-4', 'shadow-xl');
+            } else {
+                header.classList.remove('py-4', 'shadow-xl');
+                header.classList.add('py-6');
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        // Initial check
+        handleScroll();
+
+        return () => {
+            console.log("Cleaning up header scroll effect.");
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
+    // Effect for navigation active state on scroll
+    useEffect(() => {
+        console.log("Setting up navigation scroll effect.");
+        const navLinks = document.querySelectorAll('.nav-link');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navLinks.forEach(link => {
+                        link.classList.toggle('active', link.getAttribute('href').substring(1) === entry.target.id);
+                    });
+                }
+            });
+        }, { rootMargin: "-50% 0px -50% 0px" }); // Adjust rootMargin to trigger when section is roughly in the middle
+
+        // Observe all sections
+        Object.values(sectionRefs.current).forEach(ref => {
+            if (ref) observer.observe(ref);
+        });
+
+        return () => {
+            console.log("Cleaning up navigation scroll effect.");
+            Object.values(sectionRefs.current).forEach(ref => {
+                if (ref) observer.unobserve(ref);
+            });
+        };
+    }, []);
+
+    // Helper to assign ref to sections
+    const setSectionRef = useCallback((node, id) => {
+        if (node) {
+            sectionRefs.current[id] = node;
+        }
+    }, []);
+
+    // Initial project tab content display
+    useEffect(() => {
+        console.log("Setting initial project tab.");
+        if (projectsData.length > 0 && activeProjectTab === projectsData[0].id) {
+            // No need to manually click, just ensure the first one is active by default state
+            // and its content is rendered.
+        }
+    }, [activeProjectTab]);
+
+
+    return (
+        <div className="antialiased">
+            <style>
+                {`
+                /* Tailwind CSS is assumed to be available */
+                body {
+                    font-family: 'Inter', sans-serif;
+                    background-color: #18181b; /* Zinc 900 */
+                    color: #f4f4f5; /* Zinc 100 */
+                    position: relative;
+                    min-height: 100vh;
+                    overflow-x: hidden; /* Prevent horizontal scroll */
+                }
+                .chart-container {
+                    position: relative;
+                    width: 100%;
+                    max-width: 800px;
+                    margin-left: auto;
+                    margin-right: auto;
+                    height: 350px;
+                    max-height: 400px;
+                    background-color: rgba(41, 41, 41, 0.7);
+                    border-radius: 0.75rem;
+                    padding: 1.5rem;
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                @media (min-width: 768px) {
+                    .chart-container {
+                        height: 400px;
+                    }
+                }
+                .nav-link.active {
+                    color: #2dd4bf;
+                    font-weight: 600;
+                }
+                .tab-btn {
+                    background-color: rgba(39, 39, 42, 0.5);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    color: #a1a1aa;
+                }
+                .tab-btn.active {
+                    background-color: #2dd4bf;
+                    color: #ffffff;
+                    backdrop-filter: blur(0px);
+                    -webkit-backdrop-filter: blur(0px);
+                    border: 1px solid #2dd4bf;
+                }
+                .timeline-item-content {
+                    transition: all 0.3s ease-in-out;
+                    max-height: 0;
+                    overflow: hidden;
+                }
+                .timeline-item-content.open {
+                    max-height: 1000px; /* Sufficiently large value */
+                }
+                .arrow {
+                    transition: transform 0.3s ease-in-out;
+                }
+                .arrow.rotated {
+                    transform: rotate(90deg);
+                }
+                /* TEMPORARILY REMOVED INITIAL HIDING STYLES FOR TROUBLESHOOTING */
+                .reveal-on-scroll {
+                    /* opacity: 0; */
+                    /* transform: translateY(20px); */
+                    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+                }
+                .reveal-on-scroll.revealed {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+                .reveal-fade-in {
+                    /* opacity: 0; */
+                    transition: opacity 0.8s ease-in;
+                }
+                .reveal-slide-up {
+                    /* opacity: 0; */
+                    /* transform: translateY(30px); */
+                    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+                }
+                .reveal-scale-in {
+                    /* opacity: 0; */
+                    /* transform: scale(0.9); */
+                    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+                }
+                .revealed.reveal-fade-in,
+                .revealed.reveal-slide-up,
+                .revealed.reveal-scale-in {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+                /* END TEMPORARY REMOVAL */
+
+                .glass-effect {
+                    background-color: rgba(39, 39, 42, 0.7);
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                    border: 1px solid rgba(255, 255, 255, 0.15);
+                }
+                .glass-effect-alt {
+                    background-color: rgba(20, 184, 166, 0.3);
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                .glass-effect-alt-sky {
+                    background-color: rgba(14, 165, 233, 0.3);
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                .glass-effect-alt-amber {
+                    background-color: rgba(245, 158, 11, 0.3);
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                .glass-effect-alt-rose {
+                    background-color: rgba(225, 29, 72, 0.3);
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                #background-3d-canvas {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    z-index: -2;
+                    opacity: 0.05;
+                }
+                main {
+                    position: relative;
+                    z-index: 1;
+                }
+                `}
+            </style>
+
+            <canvas ref={threeDCanvasRef} id="background-3d-canvas"></canvas>
+
+            <header id="header" className="bg-stone-900/60 backdrop-blur-md sticky top-0 z-50 transition-all duration-300 py-4 md:py-6">
+                <nav className="container mx-auto px-6 flex justify-between items-center">
+                    <a href="#" className="text-xl font-bold text-stone-100">Shukdev Sharma</a>
+                    <div className="hidden md:flex items-center space-x-8">
+                        <a href="#about" className="nav-link text-stone-300 hover:text-teal-400 transition-colors">About</a>
+                        <a href="#experience" className="nav-link text-stone-300 hover:text-teal-400 transition-colors">Experience</a>
+                        <a href="#skills" className="nav-link text-stone-300 hover:text-teal-400 transition-colors">Skills</a>
+                        <a href="#certifications" className="nav-link text-stone-300 hover:text-teal-400 transition-colors">Certifications</a>
+                        <a href="#projects" className="nav-link text-stone-300 hover:text-teal-400 transition-colors">Projects</a>
+                        <a href="#contact" className="nav-link text-stone-300 hover:text-teal-400 transition-colors">Contact</a>
+                    </div>
+                    <div className="md:hidden">
+                        <button id="mobile-menu-button" onClick={toggleMobileMenu} className="text-stone-100 focus:outline-none">
+                            <span className="text-2xl">☰</span>
+                        </button>
+                    </div>
+                </nav>
+                <div id="mobile-menu" className={`${isMobileMenuOpen ? '' : 'hidden'} md:hidden bg-stone-900/80 backdrop-blur-md`}>
+                    <a href="#about" onClick={toggleMobileMenu} className="block py-2 px-6 text-stone-300 hover:bg-stone-800">About</a>
+                    <a href="#experience" onClick={toggleMobileMenu} className="block py-2 px-6 text-stone-300 hover:bg-stone-800">Experience</a>
+                    <a href="#skills" onClick={toggleMobileMenu} className="block py-2 px-6 text-stone-300 hover:bg-stone-800">Skills</a>
+                    <a href="#certifications" onClick={toggleMobileMenu} className="block py-2 px-6 text-stone-300 hover:bg-stone-800">Certifications</a>
+                    <a href="#projects" onClick={toggleMobileMenu} className="block py-2 px-6 text-stone-300 hover:bg-stone-800">Projects</a>
+                    <a href="#contact" onClick={toggleMobileMenu} className="block py-2 px-6 text-stone-300 hover:bg-stone-800">Contact</a>
+                </div>
+            </header>
+
+            <main className="container mx-auto px-6 py-8 md:py-16">
+
+                <section id="hero" ref={(node) => setSectionRef(node, 'hero')} className="min-h-[60vh] flex flex-col justify-center items-start text-left reveal-on-scroll relative overflow-hidden">
+                    <div className="max-w-3xl relative z-10">
+                        <h1 className="text-4xl md:text-6xl font-extrabold text-stone-100 leading-tight">
+                            Shukdev Sharma
+                        </h1>
+                        <p className="mt-4 text-xl md:text-2xl text-teal-400 font-semibold">
+                            Cloud & Data Engineer | Building Scalable, High-Performance Systems
+                        </p>
+                        <p className="mt-6 text-lg text-stone-300">
+                            I specialize in designing and deploying robust cloud infrastructure and data pipelines that drive efficiency, cut costs, and deliver measurable performance gains. With a foundation in software engineering and a passion for automation, I transform complex technical challenges into elegant, impactful solutions.
+                        </p>
+                        <div className="mt-8 flex items-center space-x-4">
+                            <a href="https://linkedin.com/in/shukdev" target="_blank" className="bg-teal-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-teal-600 transition-colors shadow-lg transform hover:scale-105">
+                                Connect on LinkedIn
+                            </a>
+                            <a href="https://github.com/shukdev" target="_blank" className="text-stone-300 font-semibold py-3 px-6 rounded-lg hover:bg-stone-800 transition-colors border border-stone-700 transform hover:scale-105">
+                                View GitHub
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="about" ref={(node) => setSectionRef(node, 'about')} className="py-16 md:py-24 reveal-on-scroll">
+                    <div className="grid md:grid-cols-5 gap-12 items-center">
+                        <div className="md:col-span-2">
+                            <div className="bg-stone-800 rounded-lg w-full h-80 md:h-96 flex items-center justify-center shadow-lg glass-effect reveal-scale-in">
+                                <span className="text-stone-500 text-center p-4">A professional headshot would be displayed here for a personal touch.</span>
+                            </div>
+                        </div>
+                        <div className="md:col-span-3">
+                            <h2 className="text-3xl font-bold text-stone-100 mb-4 reveal-slide-up">About Me</h2>
+                            <p className="text-stone-300 text-lg mb-4 reveal-slide-up" style={{ transitionDelay: '0.1s' }}>
+                                From optimizing chipset performance at Intel to engineering terabyte-scale data solutions at Cognizant, my career has been a journey of continuous learning and impact. I'm driven by the challenge of architecting systems that are not just functional, but exceptionally efficient and scalable. My approach combines deep technical knowledge in Python, Java, and AWS with a relentless focus on automation and quantifiable results.
+                            </p>
+                            <p className="text-stone-300 text-lg reveal-slide-up" style={{ transitionDelay: '0.2s' }}>
+                                Currently pursuing my Master's in Computer Science at Northern Arizona University and serving as a Teaching Assistant, I'm passionate about both building the future of technology and mentoring the next generation of engineers. I believe the most elegant solutions arise from a clear understanding of the problem, collaborative teamwork, and a dedication to engineering excellence.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="achievements" ref={(node) => setSectionRef(node, 'achievements')} className="py-16 md:py-24 rounded-2xl reveal-on-scroll glass-effect">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold text-stone-100 reveal-slide-up">Key Career Achievements</h2>
+                        <p className="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style={{ transitionDelay: '0.1s' }}>A snapshot of the value and impact I've delivered in my professional roles.</p>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center">
+                        <div className="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt reveal-scale-in" style={{ transitionDelay: '0.2s' }}>
+                            <p className="text-4xl font-extrabold text-teal-100"><span className="achievement-value" data-target="94">0</span>%</p>
+                            <p className="mt-2 text-sm font-medium text-teal-200">Latency Reduction</p>
+                        </div>
+                        <div className="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-sky reveal-scale-in" style={{ transitionDelay: '0.3s' }}>
+                            <p className="text-4xl font-extrabold text-sky-100"><span className="achievement-value" data-target="30">0</span>%</p>
+                            <p className="mt-2 text-sm font-medium text-sky-200">ETL Time Saved</p>
+                        </div>
+                        <div className="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-amber reveal-scale-in" style={{ transitionDelay: '0.4s' }}>
+                            <p className="text-4xl font-extrabold text-amber-100">$<span className="achievement-value" data-target="43">0</span>k+</p>
+                            <p className="mt-2 text-sm font-medium text-amber-200">Annual Cost Savings</p>
+                        </div>
+                        <div className="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect-alt-rose reveal-scale-in" style={{ transitionDelay: '0.5s' }}>
+                            <p className="text-4xl font-extrabold text-rose-100"><span className="achievement-value" data-target="10">0</span>TB+</p>
+                            <p className="mt-2 text-sm font-medium text-rose-200">Data Migrated</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="experience" ref={(node) => setSectionRef(node, 'experience')} className="py-16 md:py-24 reveal-on-scroll">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl font-bold text-stone-100 reveal-slide-up">Professional Experience</h2>
+                        <p className="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style={{ transitionDelay: '0.1s' }}>An interactive overview of my career journey, highlighting key roles and responsibilities. Click any role to expand.</p>
+                    </div>
+                    <div className="relative max-w-3xl mx-auto">
+                        <div className="absolute left-1/2 -translate-x-1/2 h-full w-0.5 bg-stone-700"></div>
+                        <div id="timeline-container" className="space-y-12">
+                            {experienceData.map((item, index) => (
+                                <div key={index} className="relative timeline-item reveal-slide-up" style={{ transitionDelay: `${0.2 + index * 0.1}s` }}>
+                                    <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-4 h-4 bg-teal-400 rounded-full border-4 border-stone-900"></div>
+                                    <div className={`${index % 2 === 0 ? 'md:ml-auto md:pl-12' : 'md:mr-auto md:pr-12'} md:w-1/2 relative`}>
+                                        <button
+                                            onClick={() => toggleTimelineItem(index)}
+                                            className="w-full text-left p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 timeline-item-trigger transform hover:scale-[1.02] glass-effect"
+                                        >
+                                            <div className="flex justify-between items-center">
+                                                <div>
+                                                    <p className="text-xs text-stone-400">{item.date}</p>
+                                                    <h3 className="font-bold text-xl text-stone-100 mt-1">{item.role}</h3>
+                                                    <p className="font-semibold text-teal-400">{item.company}</p>
+                                                </div>
+                                                <span className={`arrow text-teal-400 text-2xl font-bold ${expandedTimelineItems[index] ? 'rotated' : ''}`}>&#x25B8;</span>
+                                            </div>
+                                        </button>
+                                        <div className={`timeline-item-content mt-4 p-6 rounded-xl shadow-inner glass-effect ${expandedTimelineItems[index] ? 'open' : ''}`}>
+                                            <ul className="space-y-2 list-disc list-inside text-stone-300">
+                                                {item.details.map((detail, detailIndex) => (
+                                                    <li key={detailIndex}>{detail}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="skills" ref={(node) => setSectionRef(node, 'skills')} className="py-16 md:py-24 rounded-2xl reveal-on-scroll glass-effect">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold text-stone-100 reveal-slide-up">Technical Skills</h2>
+                        <p className="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style={{ transitionDelay: '0.1s' }}>A summary of my technical toolkit, from languages and databases to cloud and DevOps platforms.</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+                        {Object.keys(skillsData).map((key, index) => (
+                            <div key={key} id={`skills-${key}`} className="reveal-slide-up" style={{ transitionDelay: `${0.2 + index * 0.1}s` }}>
+                                <h3 className="text-xl font-bold mb-4 flex items-center text-stone-100">
+                                    <span className="text-2xl mr-3">{skillsData[key].icon}</span> {skillsData[key].title}
+                                </h3>
+                                <ul className="flex flex-wrap gap-2">
+                                    {skillsData[key].items.map((item, itemIndex) => (
+                                        <li key={itemIndex} className="flex items-center">
+                                            <span className="bg-teal-700 text-teal-100 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">{item}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="chart-container reveal-fade-in" style={{ transitionDelay: '0.6s' }}>
+                        <canvas id="skillsChart"></canvas>
+                    </div>
+                </section>
+
+                <section id="certifications" ref={(node) => setSectionRef(node, 'certifications')} className="py-16 md:py-24 reveal-on-scroll">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold text-stone-100 reveal-slide-up">Certifications</h2>
+                        <p className="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style={{ transitionDelay: '0.1s' }}>My professional certifications demonstrating validated expertise.</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto" id="certifications-container">
+                        {certificationsData.map((cert, index) => (
+                            <div key={index} className="p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect reveal-scale-in" style={{ transitionDelay: `${0.2 + index * 0.1}s` }}>
+                                <h3 className="font-bold text-xl text-stone-100">{cert.name}</h3>
+                                <p className="text-teal-400 font-semibold">{cert.issuer}</p>
+                                <p className="text-stone-400 text-sm mt-1">{cert.date}</p>
+                                {cert.link && cert.link !== '#' ? (
+                                    <a href={cert.link} target="_blank" rel="noopener noreferrer" className="text-teal-500 hover:underline text-sm mt-2 block">View Credential</a>
+                                ) : ''}
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                <section id="projects" ref={(node) => setSectionRef(node, 'projects')} className="py-16 md:py-24 reveal-on-scroll">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold text-stone-100 reveal-slide-up">Project Case Studies</h2>
+                        <p className="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style={{ transitionDelay: '0.1s' }}>A deeper look into some of my most impactful work. Select a project to view the details.</p>
+                    </div>
+                    <div>
+                        <div id="project-tabs" className="flex flex-wrap justify-center gap-2 mb-8 reveal-fade-in" style={{ transitionDelay: '0.2s' }}>
+                            {projectsData.map((project) => (
+                                <button
+                                    key={project.id}
+                                    className={`tab-btn px-4 py-2 rounded-lg font-semibold transition-colors ${activeProjectTab === project.id ? 'active' : ''}`}
+                                    onClick={() => setActiveProjectTab(project.id)}
+                                >
+                                    {project.title}
+                                </button>
+                            ))}
+                        </div>
+                        <div id="project-content" className="rounded-2xl min-h-[300px] shadow-lg glass-effect reveal-fade-in" style={{ transitionDelay: '0.3s' }}>
+                            {projectsData.map((project) => (
+                                <div
+                                    key={project.id}
+                                    className={`project-pane ${activeProjectTab === project.id ? '' : 'hidden'}`}
+                                    dangerouslySetInnerHTML={{ __html: project.content }}
+                                ></div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                <section id="education" ref={(node) => setSectionRef(node, 'education')} className="py-16 md:py-24 reveal-on-scroll">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold text-stone-100 reveal-slide-up">Education & Leadership</h2>
+                        <p className="mt-2 text-lg text-stone-300 max-w-2xl mx-auto reveal-slide-up" style={{ transitionDelay: '0.1s' }}>My academic background and experience in mentoring roles.</p>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                        <div className="p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect reveal-scale-in" style={{ transitionDelay: '0.2s' }}>
+                            <h3 className="font-bold text-xl text-stone-100">Northern Arizona University</h3>
+                            <p className="text-teal-400 font-semibold">Master of Science, Computer Science</p>
+                            <p className="text-stone-400 text-sm mt-1">Aug 2024 - Present</p>
+                        </div>
+                        <div className="p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 glass-effect reveal-scale-in" style={{ transitionDelay: '0.3s' }}>
+                            <h3 className="font-bold text-xl text-stone-100">Chandigarh University</h3>
+                            <p className="text-teal-400 font-semibold">Bachelor of Science, Computer Science</p>
+                            <p className="text-stone-400 text-sm mt-1">Aug 2018 - May 2022</p>
+                        </div>
+                        <div className="p-8 rounded-xl shadow-lg md:col-span-2 transform hover:scale-105 transition-transform duration-300 glass-effect reveal-scale-in" style={{ transitionDelay: '0.4s' }}>
+                            <h3 className="font-bold text-xl text-stone-100">Teaching Assistant (Data Structures & Python)</h3>
+                            <p className="text-teal-400 font-semibold">Northern Arizona University</p>
+                            <p className="text-stone-400 text-sm mt-1">Spring 2025 - Present</p>
+                            <ul className="mt-4 space-y-2 list-disc list-inside text-stone-300">
+                                <li>Assisting students in understanding complex algorithms and data structures.</li>
+                                <li>Providing one-on-one mentorship and debugging assistance to improve problem-solving skills.</li>
+                                <li>Grading assignments and evaluating coding projects for best practices and efficiency.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="contact" ref={(node) => setSectionRef(node, 'contact')} className="py-16 md:py-24 text-center reveal-on-scroll">
+                    <h2 className="text-3xl font-bold text-stone-100 reveal-slide-up">Let's Connect</h2>
+                    <p className="mt-4 text-lg text-stone-300 max-w-xl mx-auto reveal-slide-up" style={{ transitionDelay: '0.1s' }}>
+                        I'm always open to discussing new opportunities, challenging projects, or just talking tech. Feel free to reach out.
+                    </p>
+                    <div className="mt-8 reveal-slide-up" style={{ transitionDelay: '0.2s' }}>
+                        <a href="mailto:shukdev.nau@gmail.com" className="bg-teal-500 text-white font-bold py-4 px-8 rounded-lg hover:bg-teal-600 transition-colors text-lg shadow-lg transform hover:scale-105">
+                            shukdev.nau@gmail.com
+                        </a>
+                    </div>
+                </section>
+            </main>
+
+            <footer className="bg-stone-950 text-stone-300 py-6">
+                <div className="container mx-auto px-6 text-center">
+                    <p>&copy; 2025 Shukdev Sharma. All Rights Reserved.</p>
+                </div>
+            </footer>
+        </div>
+    );
+};
+
+export default App;
